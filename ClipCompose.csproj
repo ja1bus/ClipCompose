@@ -1,0 +1,66 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <!-- タスクトレイの NotifyIcon だけに使う（.NET の WindowsDesktop 共有フレームワークに含まれ、NuGet 依存ではない）。 -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- クリップボードのメモリをポインターで読み書きするため（LibraryImport にも必要）。 -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RootNamespace>ClipCompose</RootNamespace>
+    <AssemblyName>ClipCompose</AssemblyName>
+    <Version>1.0.0</Version>
+    <ApplicationIcon>Resources/icon.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!--
+      WinForms 向けの「DPI 設定は manifest でなく API で」という助言。WPF は manifest の PerMonitorV2 を使うため抑止する。
+      .NET 8 では WFAC010、.NET 9 以降は WFO0003 という ID で出る。
+    -->
+    <NoWarn>$(NoWarn);WFAC010;WFO0003</NoWarn>
+
+    <!--
+      配布は Microsoft Store の MSIX だけ（下の ClipComposeMsix の条件で .NET を内包する）。
+      既定の Framework-dependent は開発 PC での確認用（Inno Setup。対象 PC の .NET 10 Desktop Runtime を使う）。
+    -->
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+    <PublishSingleFile>false</PublishSingleFile>
+    <!-- 常駐アプリで最初の呼び出しの JIT 待ちを減らす。 -->
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <!-- 表示言語は英語（既定）と日本語だけ。日本語の文字列は ja\ClipCompose.Core.resources.dll。 -->
+    <SatelliteResourceLanguages>en;ja</SatelliteResourceLanguages>
+
+    <!-- Core / Tests は別 csproj。既定の Compile 対象から除外する。 -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);Core/**;Tests/**;tools/**;publish/**;installer/**</DefaultItemExcludes>
+  </PropertyGroup>
+  <!--
+    Microsoft Store 用の MSIX。installer/msix/build-msix.ps1 が -p:ClipComposeMsix=true で publish する。
+    Store から入れた PC に .NET 10 Desktop Runtime があるとは限らないため、MSIX の中身だけは .NET を内包する（Self-contained・複数ファイル）。
+    自動起動を持たないため、AreaShot・PlainClip と違って Windows の版付きの TargetFramework（StartupTask 用）は使わない。
+  -->
+  <PropertyGroup Condition="'$(ClipComposeMsix)' == 'true'">
+    <SelfContained>true</SelfContained>
+  </PropertyGroup>
+  <!--
+    ライセンス表記。MIT License の全文と第三者のソフトウェアの表記を、配布物の exe と同じフォルダーへ入れる（設定画面のバージョン情報から開く）。
+    scripts では public-repo/ にある原本、公開リポジトリではルートにある同名のファイルを使う（公開リポジトリのビルドが public-repo/ に依存しないように）。
+  -->
+  <ItemGroup Condition="Exists('public-repo/LICENSE')">
+    <None Update="public-repo/LICENSE" Link="LICENSE" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Update="public-repo/THIRD-PARTY-NOTICES.md" Link="THIRD-PARTY-NOTICES.md" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup Condition="!Exists('public-repo/LICENSE') And Exists('LICENSE')">
+    <None Update="LICENSE" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Update="THIRD-PARTY-NOTICES.md" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- WPF と WinForms の同名型（Application・MessageBox など）の衝突を避けるため、WinForms 側の暗黙 using を外す。 -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Core/ClipCompose.Core.csproj" />
+  </ItemGroup>
+</Project>

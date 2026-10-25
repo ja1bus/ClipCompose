@@ -1,0 +1,673 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AboutLicenseLink" xml:space="preserve">
+    <value>MIT License</value>
+  </data>
+  <data name="AboutLicenseTip" xml:space="preserve">
+    <value>ClipCompose is open-source software released under the MIT License. Click to show the full license text.</value>
+  </data>
+  <data name="AboutManualLink" xml:space="preserve">
+    <value>User manual (web)</value>
+  </data>
+  <data name="AboutNoticesLink" xml:space="preserve">
+    <value>Third-party notices</value>
+  </data>
+  <data name="AboutNoticesTip" xml:space="preserve">
+    <value>Shows the notices for third-party software (such as .NET).</value>
+  </data>
+  <data name="AboutPrivacyLink" xml:space="preserve">
+    <value>Privacy policy (web)</value>
+  </data>
+  <data name="AboutSourceLink" xml:space="preserve">
+    <value>Source code</value>
+  </data>
+  <data name="AppUnexpectedErrorFormat" xml:space="preserve">
+    <value>An unexpected error occurred.
+
+{0}: {1}
+
+Details were written to:
+{2}</value>
+  </data>
+  <data name="AppWillExit" xml:space="preserve">
+    <value>ClipCompose will exit.</value>
+  </data>
+  <data name="BackupMissingFormat" xml:space="preserve">
+    <value>There is no backup:
+{0}</value>
+  </data>
+  <data name="BundledFileUnreadableFormat" xml:space="preserve">
+    <value>The file could not be read. Check the following file.
+{0}</value>
+  </data>
+  <data name="ButtonAddCategory" xml:space="preserve">
+    <value>Add category</value>
+  </data>
+  <data name="ButtonCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ButtonClose" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="ButtonDelete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="ButtonDown" xml:space="preserve">
+    <value>Down</value>
+  </data>
+  <data name="ButtonExport" xml:space="preserve">
+    <value>Export…</value>
+  </data>
+  <data name="ButtonGuide" xml:space="preserve">
+    <value>How to use</value>
+  </data>
+  <data name="ButtonImport" xml:space="preserve">
+    <value>Import (replace all)…</value>
+  </data>
+  <data name="ButtonMoveTip" xml:space="preserve">
+    <value>Moves the selected category, or the selected template within its category.</value>
+  </data>
+  <data name="ButtonNewTemplate" xml:space="preserve">
+    <value>Add template</value>
+  </data>
+  <data name="ButtonOk" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="ButtonOpenFolder" xml:space="preserve">
+    <value>Open data folder</value>
+  </data>
+  <data name="ButtonPin" xml:space="preserve">
+    <value>Pin</value>
+  </data>
+  <data name="ButtonPinTip" xml:space="preserve">
+    <value>Run this template with the pinned mode hotkey or from the tray menu.</value>
+  </data>
+  <data name="ButtonRecovery" xml:space="preserve">
+    <value>Recovery options…</value>
+  </data>
+  <data name="ButtonRename" xml:space="preserve">
+    <value>Rename</value>
+  </data>
+  <data name="ButtonRenameTip" xml:space="preserve">
+    <value>Rename the selected category. Rename a template in its Name box.</value>
+  </data>
+  <data name="ButtonRevert" xml:space="preserve">
+    <value>Revert</value>
+  </data>
+  <data name="ButtonSave" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="ButtonUnpin" xml:space="preserve">
+    <value>Unpin</value>
+  </data>
+  <data name="ButtonUp" xml:space="preserve">
+    <value>Up</value>
+  </data>
+  <data name="CategoryNameAddPrompt" xml:space="preserve">
+    <value>Name of the new category</value>
+  </data>
+  <data name="CategoryNameRenamePrompt" xml:space="preserve">
+    <value>Category name</value>
+  </data>
+  <data name="ConfirmDeleteCategoryFormat" xml:space="preserve">
+    <value>Delete the category "{0}"?</value>
+  </data>
+  <data name="ConfirmDeleteTemplateFormat" xml:space="preserve">
+    <value>Delete the template "{0}"?</value>
+  </data>
+  <data name="ConfirmDeleteTemplatePinned" xml:space="preserve">
+    <value>This template is pinned. Deleting it also unpins it. No other template is pinned automatically.</value>
+  </data>
+  <data name="EditorBody" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="EditorCategory" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="EditorCountFormat" xml:space="preserve">
+    <value>{0} / {1} characters</value>
+  </data>
+  <data name="EditorInsertVariable" xml:space="preserve">
+    <value>Insert {{clipboard}}</value>
+  </data>
+  <data name="EditorName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="EditorNewTemplate" xml:space="preserve">
+    <value>New template (not saved yet)</value>
+  </data>
+  <data name="EditorNoSelection" xml:space="preserve">
+    <value>Select a template, or create one with Add template.</value>
+  </data>
+  <data name="EditorUnsaved" xml:space="preserve">
+    <value>Unsaved changes</value>
+  </data>
+  <data name="EditorVariableHint" xml:space="preserve">
+    <value>{{clipboard}} is replaced with the clipboard text when the template runs. Without it, the text is copied as is.</value>
+  </data>
+  <data name="ErrorBodyEmpty" xml:space="preserve">
+    <value>Enter the text.</value>
+  </data>
+  <data name="ErrorBodyInvalidCharacters" xml:space="preserve">
+    <value>The text contains characters that cannot be saved (NUL or broken characters).</value>
+  </data>
+  <data name="ErrorBodyTooLongFormat" xml:space="preserve">
+    <value>The text can be up to {0} characters.</value>
+  </data>
+  <data name="ErrorCategoryNameDuplicate" xml:space="preserve">
+    <value>A category with the same name already exists.</value>
+  </data>
+  <data name="ErrorCategoryNotEmpty" xml:space="preserve">
+    <value>This category still has templates. Move or delete them first.</value>
+  </data>
+  <data name="ErrorCategoryNotFound" xml:space="preserve">
+    <value>The category was not found.</value>
+  </data>
+  <data name="ErrorNameEmpty" xml:space="preserve">
+    <value>Enter a name.</value>
+  </data>
+  <data name="ErrorNameInvalidCharacters" xml:space="preserve">
+    <value>The name contains characters that cannot be used (line breaks, NUL or broken characters).</value>
+  </data>
+  <data name="ErrorNameTooLongFormat" xml:space="preserve">
+    <value>The name can be up to {0} characters.</value>
+  </data>
+  <data name="ErrorTemplateNameDuplicate" xml:space="preserve">
+    <value>A template with the same name already exists in this category.</value>
+  </data>
+  <data name="ErrorTemplateNotFound" xml:space="preserve">
+    <value>The template was not found.</value>
+  </data>
+  <data name="ExportDoneFormat" xml:space="preserve">
+    <value>Exported to:
+{0}</value>
+  </data>
+  <data name="FailClipboardBusy" xml:space="preserve">
+    <value>Another app is using the clipboard. Try again.</value>
+  </data>
+  <data name="FailProtection" xml:space="preserve">
+    <value>The copied text is protected (excluded from clipboard history), but the same protection could not be applied, so nothing was copied.</value>
+  </data>
+  <data name="FailWrite" xml:space="preserve">
+    <value>Writing to the clipboard failed. The clipboard may now be empty.</value>
+  </data>
+  <data name="FileDialogFilter" xml:space="preserve">
+    <value>ClipCompose templates (*.json)|*.json</value>
+  </data>
+  <data name="FirstRunNote" xml:space="preserve">
+    <value>ClipCompose runs in the notification area. No hotkeys are set yet.
+
+You can already click the tray icon, choose a template and paste the result with Ctrl+V. If you set hotkeys below, you can open the chooser from any app and paste automatically.
+
+Create your templates on the Templates tab.</value>
+  </data>
+  <data name="GuideText" xml:space="preserve">
+    <value>ClipCompose copies saved templates, inserting the clipboard text where needed.
+
+1. Templates
+ClipCompose starts in the notification area without opening a window. Create categories and templates on the Templates tab of Settings (right-click the tray icon &gt; Settings…). Put {{clipboard}} in a template where the copied text should go. A template without {{clipboard}} is copied as is, and the clipboard is not read.
+
+2. Run with the mouse (no hotkey needed)
+Click the tray icon, choose a template and press Enter (or double-click). The result is copied; paste it with Ctrl+V. You can also copy the pinned template from the tray menu.
+In the chooser, the pin button (Ctrl+P) pins or unpins a template, Text (Ctrl+Space) shows the template text, and Alt+↑↓ or dragging reorders templates (Alt+Shift+↑↓ or dragging a heading moves a category). Settings closes the chooser and opens Settings.
+Windows may hide new tray icons under the ^ (Show hidden icons) button. To keep the icon visible, open Settings &gt; Personalization &gt; Taskbar &gt; Other system tray icons and turn on ClipCompose, or drag the icon onto the taskbar.
+
+3. Run with hotkeys (optional)
+Hotkeys are not set by default. In Settings, set a hotkey for normal mode (open the chooser) and for pinned mode (run the pinned template without the chooser). With hotkeys, ClipCompose can also paste automatically into the window you were using. Automatic paste is off by default in normal mode and on in pinned mode. It does not work in every app; if nothing is pasted, press Ctrl+V.
+
+4. When the clipboard is read
+The clipboard is read when you confirm a template, not when you press the hotkey. If the clipboard still holds ClipCompose's previous result, it asks you to copy the source text again.
+
+5. Clipboard history and protection
+If the copied text was marked by its app as excluded from clipboard history or cloud sync (for example, by a password manager), ClipCompose applies the same marks to the result. Results of templates without {{clipboard}} are ordinary copies and may appear in Windows clipboard history or in other clipboard apps such as PlainClip. These marks are not a guarantee against every app.
+
+6. Data
+Templates and settings are saved only on this PC (the folder is shown on the General tab of Settings). Copied text and results are not saved. Use Export and Import to move templates to another PC (Import replaces all templates).</value>
+  </data>
+  <data name="GuideTitle" xml:space="preserve">
+    <value>How to use ClipCompose</value>
+  </data>
+  <data name="HotkeyErrorFormat" xml:space="preserve">
+    <value>{0} (could not register, error {1})</value>
+  </data>
+  <data name="HotkeyInUseFormat" xml:space="preserve">
+    <value>{0} (in use by another app or Windows)</value>
+  </data>
+  <data name="HotkeyRegisteredFormat" xml:space="preserve">
+    <value>{0}</value>
+  </data>
+  <data name="HotkeyStatusCapturing" xml:space="preserve">
+    <value>Press the keys. Click elsewhere to register.</value>
+  </data>
+  <data name="HotkeyStatusRegistered" xml:space="preserve">
+    <value>✓ Registered</value>
+  </data>
+  <data name="HotkeySuspended" xml:space="preserve">
+    <value>Paused while entering a hotkey</value>
+  </data>
+  <data name="HotkeyUnassigned" xml:space="preserve">
+    <value>Not set</value>
+  </data>
+  <data name="ImportConfirmFormat" xml:space="preserve">
+    <value>Replace all templates with the contents of this file?
+
+Current: {0} categories, {1} templates
+Imported: {2} categories, {3} templates
+
+The current data is backed up in the data folder before it is replaced. The pinned template is unpinned. Hotkeys and other settings on this PC are kept.</value>
+  </data>
+  <data name="ImportDoneFormat" xml:space="preserve">
+    <value>Imported {0} categories and {1} templates.</value>
+  </data>
+  <data name="ImportUnpinFailedFormat" xml:space="preserve">
+    <value>Nothing was imported because the pinned template could not be unpinned first.
+
+{0}</value>
+  </data>
+  <data name="InputContainsNul" xml:space="preserve">
+    <value>The clipboard text contains a NUL character and cannot be passed on exactly.</value>
+  </data>
+  <data name="InputEmpty" xml:space="preserve">
+    <value>The clipboard text is empty.</value>
+  </data>
+  <data name="InputMissing" xml:space="preserve">
+    <value>The clipboard has no text. Copy the text to insert first.</value>
+  </data>
+  <data name="InputTooLongFormat" xml:space="preserve">
+    <value>The clipboard text is longer than {0} characters.</value>
+  </data>
+  <data name="LanguageSystem" xml:space="preserve">
+    <value>Match Windows display language</value>
+  </data>
+  <data name="LoadFailedFormat" xml:space="preserve">
+    <value>Could not read the file:
+{0}
+
+{1}</value>
+  </data>
+  <data name="NoCategoriesHint" xml:space="preserve">
+    <value>Create a category first with Add category.</value>
+  </data>
+  <data name="OpenUrlFailedFormat" xml:space="preserve">
+    <value>The page could not be opened in your browser. Open the following address manually.
+{0}</value>
+  </data>
+  <data name="PasteSkipElevated" xml:space="preserve">
+    <value>The target app is running as administrator, so ClipCompose cannot paste into it.</value>
+  </data>
+  <data name="PasteSkipFocus" xml:space="preserve">
+    <value>The original window could not be brought back to the front.</value>
+  </data>
+  <data name="PasteSkipKeys" xml:space="preserve">
+    <value>The hotkey keys were not released in time.</value>
+  </data>
+  <data name="PasteSkipSend" xml:space="preserve">
+    <value>The paste keys could not be sent.</value>
+  </data>
+  <data name="PasteSkipTargetGone" xml:space="preserve">
+    <value>The original window is no longer available.</value>
+  </data>
+  <data name="PickerAutoPaste" xml:space="preserve">
+    <value>Auto paste</value>
+  </data>
+  <data name="PickerAutoPasteTip" xml:space="preserve">
+    <value>Copies the result and pastes it into the previous window. The clipboard is read when you confirm a template, not when the hotkey was pressed.</value>
+  </data>
+  <data name="PickerCopyOnly" xml:space="preserve">
+    <value>Copy only</value>
+  </data>
+  <data name="PickerCopyOnlyTip" xml:space="preserve">
+    <value>Copies the result. Paste it with Ctrl+V. The clipboard is read when you confirm a template, not when this window opened.</value>
+  </data>
+  <data name="PickerFixedHotkeyFormat" xml:space="preserve">
+    <value>Pinned: {0}</value>
+  </data>
+  <data name="PickerHint" xml:space="preserve">
+    <value>Enter: run   Ctrl+P: pin   Alt+↑↓: reorder</value>
+  </data>
+  <data name="PickerHintTip" xml:space="preserve">
+    <value>Alt+Shift+↑↓ moves the category. You can also drag templates and category headings. Ctrl+Space shows the template text.</value>
+  </data>
+  <data name="PickerNoMatch" xml:space="preserve">
+    <value>No matching templates</value>
+  </data>
+  <data name="PickerNoSortWhileSearching" xml:space="preserve">
+    <value>Clear the search to reorder.</value>
+  </data>
+  <data name="PickerPreview" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="PickerPreviewTip" xml:space="preserve">
+    <value>Show or hide the template text (Ctrl+Space)</value>
+  </data>
+  <data name="PickerSearch" xml:space="preserve">
+    <value>Search by name</value>
+  </data>
+  <data name="PickerSettings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="PickerSettingsTip" xml:space="preserve">
+    <value>Close this window and open Settings to edit templates</value>
+  </data>
+  <data name="PickerTitle" xml:space="preserve">
+    <value>Choose a template</value>
+  </data>
+  <data name="PinnedMark" xml:space="preserve">
+    <value>Pinned</value>
+  </data>
+  <data name="ProblemCategoryFormat" xml:space="preserve">
+    <value>Category #{0}: {1}</value>
+  </data>
+  <data name="ProblemDuplicateId" xml:space="preserve">
+    <value>The ID is missing or duplicated.</value>
+  </data>
+  <data name="ProblemInvalidJsonFormat" xml:space="preserve">
+    <value>The file content is not in the expected format (line {0}, position {1}).</value>
+  </data>
+  <data name="ProblemMissingCategory" xml:space="preserve">
+    <value>Its category does not exist.</value>
+  </data>
+  <data name="ProblemMoreFormat" xml:space="preserve">
+    <value>…and {0} more problems.</value>
+  </data>
+  <data name="ProblemNewerSchemaFormat" xml:space="preserve">
+    <value>The file was created by a newer version of ClipCompose (schemaVersion {0}).</value>
+  </data>
+  <data name="ProblemNoSchemaVersion" xml:space="preserve">
+    <value>The file is not ClipCompose data (schemaVersion is missing or not a number).</value>
+  </data>
+  <data name="ProblemNullRecord" xml:space="preserve">
+    <value>The file contains an empty (null) category or template record.</value>
+  </data>
+  <data name="ProblemTemplateFormat" xml:space="preserve">
+    <value>Template #{0}: {1}</value>
+  </data>
+  <data name="ProblemTooLargeFormat" xml:space="preserve">
+    <value>The file is larger than {0} MiB.</value>
+  </data>
+  <data name="ProblemUnsupportedSchemaFormat" xml:space="preserve">
+    <value>Unsupported schemaVersion: {0}.</value>
+  </data>
+  <data name="RecoveryBackupOkFormat" xml:space="preserve">
+    <value>Backup (previous saved data): {0} categories, {1} templates</value>
+  </data>
+  <data name="RecoveryBackupProblemFormat" xml:space="preserve">
+    <value>The backup cannot be used:
+{0}</value>
+  </data>
+  <data name="RecoveryDone" xml:space="preserve">
+    <value>Recovered. Saving has resumed.</value>
+  </data>
+  <data name="RecoveryKeep" xml:space="preserve">
+    <value>Decide later</value>
+  </data>
+  <data name="RecoveryMessageFormat" xml:space="preserve">
+    <value>The template file could not be read.
+
+{0}
+
+The file has not been changed. Saving is stopped until you choose how to recover.</value>
+  </data>
+  <data name="RecoveryNote" xml:space="preserve">
+    <value>Either way, the unreadable file is kept in the data folder with "corrupt" in its name.</value>
+  </data>
+  <data name="RecoveryRestoreBackup" xml:space="preserve">
+    <value>Restore from backup</value>
+  </data>
+  <data name="RecoveryStartEmpty" xml:space="preserve">
+    <value>Start empty</value>
+  </data>
+  <data name="RestartFailed" xml:space="preserve">
+    <value>ClipCompose could not be restarted. The new language is used the next time it starts.</value>
+  </data>
+  <data name="RestartPrompt" xml:space="preserve">
+    <value>Restart ClipCompose now to change the display language?
+
+If you choose No, the new language is used the next time ClipCompose starts.</value>
+  </data>
+  <data name="ResultTooLongFormat" xml:space="preserve">
+    <value>The result would be longer than {0} characters.</value>
+  </data>
+  <data name="RowCategoryFormat" xml:space="preserve">
+    <value>Category: {0}</value>
+  </data>
+  <data name="RowPinTip" xml:space="preserve">
+    <value>Pin: run it with the pinned mode hotkey (Ctrl+P)</value>
+  </data>
+  <data name="RowUnpinTip" xml:space="preserve">
+    <value>Unpin (Ctrl+P)</value>
+  </data>
+  <data name="SaveBlockedFormat" xml:space="preserve">
+    <value>Saving is stopped because this file could not be read:
+{0}
+
+Choose a recovery option first.</value>
+  </data>
+  <data name="SaveFailedFormat" xml:space="preserve">
+    <value>Could not save the file:
+{0}
+
+{1}</value>
+  </data>
+  <data name="SettingsAppliedNote" xml:space="preserve">
+    <value>Changes on this tab take effect immediately. A hotkey is registered when you leave its box.</value>
+  </data>
+  <data name="SettingsAutoPaste" xml:space="preserve">
+    <value>Automatic paste</value>
+  </data>
+  <data name="SettingsAutoPasteNote" xml:space="preserve">
+    <value>Sends Ctrl+V to the window that was active when you pressed the hotkey. It does not work in every app (for example, apps running as administrator); then paste with Ctrl+V. Running from the tray always copies only.</value>
+  </data>
+  <data name="SettingsData" xml:space="preserve">
+    <value>Data</value>
+  </data>
+  <data name="SettingsDataFolderFormat" xml:space="preserve">
+    <value>Data folder: {0}</value>
+  </data>
+  <data name="SettingsDataNote" xml:space="preserve">
+    <value>Use Export and Import to move templates to another PC. Hotkeys and other settings on this PC are not included.</value>
+  </data>
+  <data name="SettingsDuplicateHotkey" xml:space="preserve">
+    <value>The normal mode and pinned mode hotkeys must be different.</value>
+  </data>
+  <data name="SettingsFixedAutoPaste" xml:space="preserve">
+    <value>Paste automatically in pinned mode</value>
+  </data>
+  <data name="SettingsFixedHotkey" xml:space="preserve">
+    <value>Pinned mode (run the pinned template):</value>
+  </data>
+  <data name="SettingsHotkeyFailedFormat" xml:space="preserve">
+    <value>Could not register the hotkey:
+{0}
+
+The previous hotkeys are kept. Choose another key combination.</value>
+  </data>
+  <data name="SettingsHotkeyNote" xml:space="preserve">
+    <value>Not set by default. Without hotkeys you can still click the tray icon to choose and copy a template. Include Ctrl, Alt or Win, and avoid keys that other apps use (for example, Ctrl+Alt+V is Paste Special in Office).</value>
+  </data>
+  <data name="SettingsHotkeys" xml:space="preserve">
+    <value>Hotkeys</value>
+  </data>
+  <data name="SettingsLanguage" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="SettingsLanguageNote" xml:space="preserve">
+    <value>Changes take effect after restarting ClipCompose.</value>
+  </data>
+  <data name="SettingsLoadFailedFormat" xml:space="preserve">
+    <value>The settings file could not be read.
+
+{0}
+
+ClipCompose is running with default settings, and settings are not saved.
+
+Move the file aside (it is kept with "corrupt" in its name) and start with default settings?</value>
+  </data>
+  <data name="SettingsNormalAutoPaste" xml:space="preserve">
+    <value>Paste automatically in normal mode</value>
+  </data>
+  <data name="SettingsNormalHotkey" xml:space="preserve">
+    <value>Normal mode (choose a template):</value>
+  </data>
+  <data name="SettingsTitle" xml:space="preserve">
+    <value>ClipCompose Settings</value>
+  </data>
+  <data name="ShortcutBoxTip" xml:space="preserve">
+    <value>Click here and press the key combination. Backspace or Delete clears it.</value>
+  </data>
+  <data name="ShortcutBoxUnassigned" xml:space="preserve">
+    <value>Not set</value>
+  </data>
+  <data name="ShortcutEmpty" xml:space="preserve">
+    <value>Press a key combination.</value>
+  </data>
+  <data name="ShortcutModifierOnly" xml:space="preserve">
+    <value>Add a key other than Ctrl, Alt, Shift or Win.</value>
+  </data>
+  <data name="ShortcutRequiresModifier" xml:space="preserve">
+    <value>Combine the key with Ctrl, Alt or Win (Shift alone is not enough).</value>
+  </data>
+  <data name="StatusSaveBlocked" xml:space="preserve">
+    <value>Saving is stopped because the template file could not be read.</value>
+  </data>
+  <data name="StatusSettingsBlocked" xml:space="preserve">
+    <value>Settings are not saved because the settings file could not be read.</value>
+  </data>
+  <data name="TabAbout" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="TabGeneral" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="TabHotkeys" xml:space="preserve">
+    <value>Hotkeys and behavior</value>
+  </data>
+  <data name="TabTemplates" xml:space="preserve">
+    <value>Templates</value>
+  </data>
+  <data name="TemplateInvalid" xml:space="preserve">
+    <value>The template text cannot be output.</value>
+  </data>
+  <data name="TemplatesHeader" xml:space="preserve">
+    <value>Categories and templates</value>
+  </data>
+  <data name="TextOnly" xml:space="preserve">
+    <value>Text only</value>
+  </data>
+  <data name="ToastAlreadyComposedDetail" xml:space="preserve">
+    <value>The clipboard still holds the previous result from ClipCompose.</value>
+  </data>
+  <data name="ToastAlreadyComposedTitle" xml:space="preserve">
+    <value>Copy the source text again</value>
+  </data>
+  <data name="ToastChangedAfterCopyDetail" xml:space="preserve">
+    <value>Another app changed the clipboard before pasting, so nothing was pasted and the new content was kept. Run the template again.</value>
+  </data>
+  <data name="ToastChangedBeforeCopyDetail" xml:space="preserve">
+    <value>Another app changed the clipboard after it was read, so it was not overwritten. Run the template again.</value>
+  </data>
+  <data name="ToastClipboardChangedTitle" xml:space="preserve">
+    <value>The clipboard was changed</value>
+  </data>
+  <data name="ToastCopiedDetail" xml:space="preserve">
+    <value>Paste with Ctrl+V where you want it.</value>
+  </data>
+  <data name="ToastCopiedTitle" xml:space="preserve">
+    <value>Copied</value>
+  </data>
+  <data name="ToastFailedTitle" xml:space="preserve">
+    <value>Could not complete</value>
+  </data>
+  <data name="ToastFixedMissingDetail" xml:space="preserve">
+    <value>It may have been deleted. Pin another template in the chooser or in Settings.</value>
+  </data>
+  <data name="ToastFixedMissingTitle" xml:space="preserve">
+    <value>Pinned template not found</value>
+  </data>
+  <data name="ToastFixedNotSetDetail" xml:space="preserve">
+    <value>Pin a template with the pin button in the chooser or in Settings.</value>
+  </data>
+  <data name="ToastFixedNotSetTitle" xml:space="preserve">
+    <value>No pinned template</value>
+  </data>
+  <data name="ToastInputRejectedTitle" xml:space="preserve">
+    <value>Cannot use the clipboard text</value>
+  </data>
+  <data name="ToastNoTemplatesDetail" xml:space="preserve">
+    <value>Create templates in Settings.</value>
+  </data>
+  <data name="ToastNoTemplatesTitle" xml:space="preserve">
+    <value>No templates yet</value>
+  </data>
+  <data name="ToastPasteSentDetail" xml:space="preserve">
+    <value>The result is also on the clipboard. If nothing was pasted, press Ctrl+V.</value>
+  </data>
+  <data name="ToastPasteSentTitle" xml:space="preserve">
+    <value>Paste sent</value>
+  </data>
+  <data name="ToastPasteSkippedTitle" xml:space="preserve">
+    <value>Copied only (automatic paste stopped)</value>
+  </data>
+  <data name="ToastSaveBlockedTitle" xml:space="preserve">
+    <value>Template data could not be read</value>
+  </data>
+  <data name="ToastStartedDetail" xml:space="preserve">
+    <value>Click the tray icon or press the hotkey to choose a template.</value>
+  </data>
+  <data name="ToastStartedTitle" xml:space="preserve">
+    <value>ClipCompose is running</value>
+  </data>
+  <data name="TrayExit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="TrayNotice" xml:space="preserve">
+    <value>It stays in the notification area. Click the icon to choose a template, or right-click it for the menu (Exit quits).</value>
+  </data>
+  <data name="TrayNoticeTitle" xml:space="preserve">
+    <value>ClipCompose is still running</value>
+  </data>
+  <data name="TrayOpenPicker" xml:space="preserve">
+    <value>Choose a template and copy…</value>
+  </data>
+  <data name="TrayRunFixedFormat" xml:space="preserve">
+    <value>Copy pinned: {0}</value>
+  </data>
+  <data name="TraySettings" xml:space="preserve">
+    <value>Settings…</value>
+  </data>
+  <data name="TrayTooltipFixedFormat" xml:space="preserve">
+    <value>Pinned: {0}</value>
+  </data>
+  <data name="TrayTooltipFixedHotkeyFormat" xml:space="preserve">
+    <value>Pinned: {0} ({1})</value>
+  </data>
+  <data name="TrayTooltipNoFixed" xml:space="preserve">
+    <value>Pinned: none</value>
+  </data>
+  <data name="TrayTooltipNormalFormat" xml:space="preserve">
+    <value>Choose: {0}</value>
+  </data>
+  <data name="UnsavedPrompt" xml:space="preserve">
+    <value>The template has unsaved changes. Save them?
+
+Yes: save   No: discard   Cancel: keep editing</value>
+  </data>
+  <data name="UsesClipboard" xml:space="preserve">
+    <value>Uses clipboard</value>
+  </data>
+  <data name="VersionFormat" xml:space="preserve">
+    <value>Version {0}</value>
+  </data>
+</root>

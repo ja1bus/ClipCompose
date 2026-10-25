@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- UI・Win32 に依存しないロジック（テンプレート・合成・実行の流れ・保存・設定・ショートカット）と、画面に表示する文字列。単体テストの対象。 -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>ClipCompose.Core</RootNamespace>
+    <!-- 既定の言語は英語（Strings.resx）。日本語は ja\ClipCompose.Core.resources.dll（Strings.ja.resx）。 -->
+    <NeutralLanguage>en</NeutralLanguage>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Visual Studio なしで（dotnet build だけで）型付きのアクセス用クラス ClipCompose.Core.Localization.Strings を生成する。XAML の x:Static から使うため public。 -->
+    <EmbeddedResource Update="Localization\Strings.resx">
+      <StronglyTypedLanguage>CSharp</StronglyTypedLanguage>
+      <StronglyTypedNamespace>ClipCompose.Core.Localization</StronglyTypedNamespace>
+      <StronglyTypedClassName>Strings</StronglyTypedClassName>
+      <StronglyTypedFileName>$(IntermediateOutputPath)Strings.Designer.cs</StronglyTypedFileName>
+      <PublicClass>true</PublicClass>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>
