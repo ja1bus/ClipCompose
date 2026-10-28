@@ -539,12 +539,6 @@ If you choose No, the new language is used the next time ClipCompose starts.</va
   <data name="RowExpanded" xml:space="preserve">
     <value>expanded</value>
   </data>
-  <data name="RowPinTip" xml:space="preserve">
-    <value>Pin: run it with the pinned mode hotkey (Ctrl+P)</value>
-  </data>
-  <data name="RowUnpinTip" xml:space="preserve">
-    <value>Unpin (Ctrl+P)</value>
-  </data>
   <data name="SaveBlockedFormat" xml:space="preserve">
     <value>Saving is stopped because this file could not be read:
 {0}

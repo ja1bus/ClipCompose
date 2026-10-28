@@ -9,27 +9,6 @@
         FontFamily="{x:Static v:UiFont.Family}" FontSize="13">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
-        <!-- 行の中の小さなアイコンボタン（📌）。フォーカスを取らず、検索欄の入力を続けられるようにする。 -->
-        <Style x:Key="IconButton" TargetType="Button">
-            <Setter Property="Focusable" Value="False" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Width" Value="24" />
-            <Setter Property="Height" Value="22" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="Bd" Background="Transparent" CornerRadius="3">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#1F000000" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
         <!-- 選択中の行は、検索欄にフォーカスがあっても（一覧が非アクティブでも）はっきり見えるようにする。 -->
         <Style x:Key="ItemStyle" TargetType="ListBoxItem">
             <Setter Property="Padding" Value="0" />
@@ -81,7 +60,7 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="20" />
-                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="20" />
                 </Grid.ColumnDefinitions>
                 <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                 <!-- 検索結果（平らな一覧）では所属カテゴリを添える。行の高さは変えない。 -->
@@ -91,16 +70,12 @@
                 <TextBlock Grid.Column="2" Text="&#xE77F;" FontFamily="{x:Static v:UiFont.Icons}" FontSize="12" Foreground="#2E6DB4"
                            HorizontalAlignment="Center" VerticalAlignment="Center" ToolTip="{x:Static l:Strings.UsesClipboard}"
                            Visibility="{Binding UsesClipboard, Converter={StaticResource BoolToVisibility}}" />
-                <Button Grid.Column="3" Style="{StaticResource IconButton}" Click="OnPinClick" ToolTip="{Binding PinTip}"
-                        AutomationProperties.Name="{Binding PinTip}">
-                    <TextBlock x:Name="PinIcon" Text="&#xE718;" FontFamily="{x:Static v:UiFont.Icons}" FontSize="13" Foreground="#B0B0B0" />
-                </Button>
+                <!-- 固定中の目印（設定画面の一覧と同じ）。固定・解除は下の［固定する］ボタンと Ctrl+P で行う。 -->
+                <TextBlock Grid.Column="3" Text="&#xE840;" FontFamily="{x:Static v:UiFont.Icons}" FontSize="13" Foreground="#D9480F"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" ToolTip="{x:Static l:Strings.PinnedMark}"
+                           Visibility="{Binding Pinned, Converter={StaticResource BoolToVisibility}}" />
             </Grid>
             <DataTemplate.Triggers>
-                <DataTrigger Binding="{Binding Pinned}" Value="True">
-                    <Setter TargetName="PinIcon" Property="Text" Value="&#xE840;" />
-                    <Setter TargetName="PinIcon" Property="Foreground" Value="#D9480F" />
-                </DataTrigger>
                 <DataTrigger Binding="{Binding ShowCategory}" Value="True">
                     <Setter TargetName="RowGrid" Property="Margin" Value="6,1,2,1" />
                 </DataTrigger>
@@ -122,8 +97,16 @@
             </Grid>
             <StackPanel DockPanel.Dock="Bottom" Margin="0,6,0,0">
                 <TextBlock x:Name="ErrorText" Foreground="Firebrick" TextWrapping="Wrap" FontSize="12" Margin="0,0,0,4" Visibility="Collapsed" />
-                <DockPanel>
-                    <Button x:Name="PreviewButton" Click="OnTogglePreview" Padding="6,2" Focusable="False" ToolTip="{x:Static l:Strings.PickerPreviewTip}"
+                <StackPanel Orientation="Horizontal">
+                    <!-- 選んでいるテンプレートを固定・解除する（設定画面の［テンプレート］タブと同じボタン）。 -->
+                    <Button x:Name="PinButton" Click="OnTogglePin" Padding="6,2" Focusable="False" ToolTip="{x:Static l:Strings.ButtonPinTip}"
+                            AutomationProperties.Name="{Binding Text, ElementName=PinText}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE840;" FontFamily="{x:Static v:UiFont.Icons}" Foreground="#D9480F" VerticalAlignment="Center" Margin="0,0,5,0" />
+                            <TextBlock x:Name="PinText" Text="{x:Static l:Strings.ButtonPin}" />
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="PreviewButton" Click="OnTogglePreview" Padding="6,2" Margin="6,0,0,0" Focusable="False" ToolTip="{x:Static l:Strings.PickerPreviewTip}"
                             AutomationProperties.Name="{x:Static l:Strings.PickerPreview}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="&#xE890;" FontFamily="{x:Static v:UiFont.Icons}" VerticalAlignment="Center" Margin="0,0,5,0" />
@@ -141,9 +124,9 @@
                             <TextBlock Text="{x:Static l:Strings.PickerSettings}" />
                         </StackPanel>
                     </Button>
-                    <TextBlock x:Name="ModeText" Foreground="#555" FontSize="12" TextAlignment="Right" VerticalAlignment="Center"
-                               TextTrimming="CharacterEllipsis" Margin="8,0,0,0" />
-                </DockPanel>
+                </StackPanel>
+                <!-- 自動貼り付け／コピーのみ。ボタンの行に置くと日本語で切れるため、次の行に置く。 -->
+                <TextBlock x:Name="ModeText" Foreground="#555" FontSize="12" TextTrimming="CharacterEllipsis" Margin="0,6,0,0" />
                 <TextBlock Text="{x:Static l:Strings.PickerHint}" ToolTip="{x:Static l:Strings.PickerHintTip}" Foreground="#666" FontSize="11.5"
                            TextWrapping="Wrap" Margin="0,6,0,0" />
                 <!-- 固定ホットキー（登録しているときだけ）。普段見る画面で思い出せるようにする。 -->

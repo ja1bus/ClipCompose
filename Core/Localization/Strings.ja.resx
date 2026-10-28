@@ -539,12 +539,6 @@ Microsoft Store 版では、設定画面の［全般］タブで［Windows へ�
   <data name="RowExpanded" xml:space="preserve">
     <value>開いています</value>
   </data>
-  <data name="RowPinTip" xml:space="preserve">
-    <value>固定する: 固定モードのホットキーで実行します（Ctrl+P）</value>
-  </data>
-  <data name="RowUnpinTip" xml:space="preserve">
-    <value>固定を解除（Ctrl+P）</value>
-  </data>
   <data name="SaveBlockedFormat" xml:space="preserve">
     <value>次のファイルを読み込めなかったため、保存を停止しています:
 {0}

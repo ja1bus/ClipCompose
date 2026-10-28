@@ -14,7 +14,7 @@ namespace ClipCompose.Views;
 /// - カテゴリは見出しのクリック・Enter・←→（検索欄が空のとき）で開閉し、閉じている ID を設定に保存する。
 /// - ↑↓で見出しとテンプレートを移動、Enter で確定（見出しなら開閉）、Esc で中止。テンプレートのダブルクリックでも確定する。
 /// - IME の変換確定の Enter（Key.ImeProcessed として届く）では確定しない。
-/// - 📌（Ctrl+P）で固定・解除、Alt+↑↓ / Alt+Shift+↑↓ とドラッグで並べ替え（即時に保存）、［内容］（Ctrl+Space）で本文パネル。
+/// - ［固定する］（Ctrl+P）で選んでいるテンプレートを固定・解除、Alt+↑↓ / Alt+Shift+↑↓ とドラッグで並べ替え（即時に保存）、［内容］（Ctrl+Space）で本文パネル。
 /// - 別のアプリへ移った（非アクティブになった）ら閉じて中止する。中止ではクリップボードを読み書きしない。
 ///   このため、エラーはメッセージボックス（別のウィンドウ）ではなく、この画面の中に表示する。
 /// 確定・中止は 1 回だけ通知する。クリップボードの処理は呼び出し側が、この画面を閉じた後に行う。
@@ -168,6 +168,7 @@ public partial class PickerWindow : Window
         if (List.SelectedItem is not null) List.ScrollIntoView(List.SelectedItem);
         NoMatch.Visibility = rows.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         UpdateFoldAllButton(rows);
+        UpdatePinButton();
         UpdatePreview();
     }
 
@@ -178,7 +179,11 @@ public partial class PickerWindow : Window
         Refresh(null, null);
     }
 
-    private void OnSelectionChanged(object sender, SelectionChangedEventArgs e) => UpdatePreview();
+    private void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        UpdatePinButton();
+        UpdatePreview();
+    }
 
     private void MoveSelection(int offset)
     {
@@ -192,7 +197,6 @@ public partial class PickerWindow : Window
 
     private void OnListDoubleClick(object sender, MouseButtonEventArgs e)
     {
-        if (IsInButton(e.OriginalSource)) return; // 📌の連打で実行しない
         if (e.OriginalSource is DependencyObject d && ItemsControl.ContainerFromElement(List, d) is ListBoxItem { DataContext: TemplateRow })
             Confirm(byEnter: false);
     }
@@ -245,9 +249,16 @@ public partial class PickerWindow : Window
 
     // ---- 固定 ----
 
-    private void OnPinClick(object sender, RoutedEventArgs e)
+    private void OnTogglePin(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement { DataContext: TemplateRow row }) TogglePin(row);
+        if (SelectedRow is { } row) TogglePin(row);
+    }
+
+    /// <summary>［固定する］／［固定解除］を選んでいる行に合わせる。見出しを選んでいるときは押せない。</summary>
+    private void UpdatePinButton()
+    {
+        PinButton.IsEnabled = SelectedRow is not null;
+        PinText.Text = SelectedRow is { Pinned: true } ? Strings.ButtonUnpin : Strings.ButtonPin;
     }
 
     /// <summary>固定する（固定中なら解除する）。実行はしない。</summary>
@@ -326,7 +337,7 @@ public partial class PickerWindow : Window
     {
         _dragRow = null;
         _pendingToggle = null;
-        if (IsInButton(e.OriginalSource) || e.OriginalSource is not DependencyObject d) return;
+        if (e.OriginalSource is not DependencyObject d) return;
         if (ItemsControl.ContainerFromElement(List, d) is not ListBoxItem { DataContext: TreeRow row }) return;
         _dragRow = row;
         _dragStart = e.GetPosition(List);
@@ -460,15 +471,5 @@ public partial class PickerWindow : Window
         var work = SystemParameters.WorkArea;
         if (Left + ActualWidth > work.Right) Left = Math.Max(work.Left, work.Right - ActualWidth);
         if (Top + ActualHeight > work.Bottom) Top = Math.Max(work.Top, work.Bottom - ActualHeight);
-    }
-
-    private static bool IsInButton(object source)
-    {
-        for (var d = source as DependencyObject; d is not null; d = d is Visual or System.Windows.Media.Media3D.Visual3D ? VisualTreeHelper.GetParent(d) : LogicalTreeHelper.GetParent(d))
-        {
-            if (d is Button) return true;
-            if (d is ListBoxItem) return false;
-        }
-        return false;
     }
 }

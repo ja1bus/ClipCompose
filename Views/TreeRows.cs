@@ -44,8 +44,6 @@ public sealed record TemplateRow(Template Template, bool Pinned, string? Categor
 
     public bool ShowCategory => CategoryName is not null;
 
-    public string PinTip => Pinned ? Strings.RowUnpinTip : Strings.RowPinTip;
-
     /// <summary>一覧の項目の名前として UI Automation（読み上げ）に渡る文字列。ID・本文は含めない。</summary>
     public override string ToString() =>
         string.Join(", ", new[]
