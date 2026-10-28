@@ -54,26 +54,44 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        <Style x:Key="HeaderStyle" TargetType="ListBoxItem" BasedOn="{StaticResource ItemStyle}">
-            <Setter Property="Focusable" Value="False" />
-        </Style>
-        <v:HeaderNotSelectableStyle x:Key="RowStyles" Header="{StaticResource HeaderStyle}" Item="{StaticResource ItemStyle}" />
+        <!-- カテゴリの見出し。▶／▼ の見出しをクリック・Enter・←→ で開閉する。件数はカテゴリの全テンプレートの数。 -->
         <DataTemplate DataType="{x:Type v:CategoryRow}">
-            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="#444" Margin="4,6,4,2" TextTrimming="CharacterEllipsis"
-                       Cursor="SizeNS" />
+            <Grid Margin="2,5,6,2" Background="Transparent">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="Chevron" Text="&#xE70D;" FontFamily="{x:Static v:UiFont.Icons}" FontSize="9" Foreground="#666"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" Cursor="Hand" />
+                <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold" Foreground="#444" Margin="2,0,6,0"
+                           TextTrimming="CharacterEllipsis" Cursor="SizeNS" />
+                <TextBlock Grid.Column="2" Text="{Binding CountText}" ToolTip="{Binding CountTip}" Foreground="#777" FontSize="12"
+                           VerticalAlignment="Center" />
+            </Grid>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding Expanded}" Value="False">
+                    <Setter TargetName="Chevron" Property="Text" Value="&#xE76C;" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
         </DataTemplate>
         <DataTemplate DataType="{x:Type v:TemplateRow}">
-            <Grid Margin="16,1,2,1">
+            <Grid x:Name="RowGrid" Margin="18,1,2,1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="20" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                <TextBlock Grid.Column="1" Text="&#xE77F;" FontFamily="{x:Static v:UiFont.Icons}" FontSize="12" Foreground="#2E6DB4"
+                <!-- 検索結果（平らな一覧）では所属カテゴリを添える。行の高さは変えない。 -->
+                <TextBlock Grid.Column="1" Text="{Binding CategoryName}" Foreground="#888" FontSize="11.5" MaxWidth="104" Margin="6,0,2,0"
+                           VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                           Visibility="{Binding ShowCategory, Converter={StaticResource BoolToVisibility}}" />
+                <TextBlock Grid.Column="2" Text="&#xE77F;" FontFamily="{x:Static v:UiFont.Icons}" FontSize="12" Foreground="#2E6DB4"
                            HorizontalAlignment="Center" VerticalAlignment="Center" ToolTip="{x:Static l:Strings.UsesClipboard}"
                            Visibility="{Binding UsesClipboard, Converter={StaticResource BoolToVisibility}}" />
-                <Button Grid.Column="2" Style="{StaticResource IconButton}" Click="OnPinClick" ToolTip="{Binding PinTip}"
+                <Button Grid.Column="3" Style="{StaticResource IconButton}" Click="OnPinClick" ToolTip="{Binding PinTip}"
                         AutomationProperties.Name="{Binding PinTip}">
                     <TextBlock x:Name="PinIcon" Text="&#xE718;" FontFamily="{x:Static v:UiFont.Icons}" FontSize="13" Foreground="#B0B0B0" />
                 </Button>
@@ -82,6 +100,9 @@
                 <DataTrigger Binding="{Binding Pinned}" Value="True">
                     <Setter TargetName="PinIcon" Property="Text" Value="&#xE840;" />
                     <Setter TargetName="PinIcon" Property="Foreground" Value="#D9480F" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding ShowCategory}" Value="True">
+                    <Setter TargetName="RowGrid" Property="Margin" Value="6,1,2,1" />
                 </DataTrigger>
             </DataTemplate.Triggers>
         </DataTemplate>
@@ -109,6 +130,10 @@
                             <TextBlock Text="{x:Static l:Strings.PickerPreview}" />
                         </StackPanel>
                     </Button>
+                    <!-- すべて開く／すべて閉じる（検索中は使えない）。新しい行を増やさないよう、アイコンだけのボタンにする。 -->
+                    <Button x:Name="FoldAllButton" Click="OnFoldAll" Padding="5,2" Margin="6,0,0,0" Focusable="False">
+                        <TextBlock x:Name="FoldAllIcon" Text="&#xE70E;" FontFamily="{x:Static v:UiFont.Icons}" FontSize="11" VerticalAlignment="Center" />
+                    </Button>
                     <Button Click="OnSettings" Padding="6,2" Margin="6,0,0,0" Focusable="False" ToolTip="{x:Static l:Strings.PickerSettingsTip}"
                             AutomationProperties.Name="{x:Static l:Strings.PickerSettings}">
                         <StackPanel Orientation="Horizontal">
@@ -127,8 +152,10 @@
 
             </StackPanel>
             <Grid>
-                <ListBox x:Name="List" MinHeight="140" ItemContainerStyleSelector="{StaticResource RowStyles}"
+                <ListBox x:Name="List" MinHeight="140" ItemContainerStyle="{StaticResource ItemStyle}"
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled" AllowDrop="True"
+                         VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
+                         PreviewMouseLeftButtonUp="OnListMouseUp"
                          SelectionChanged="OnSelectionChanged" MouseDoubleClick="OnListDoubleClick"
                          PreviewMouseLeftButtonDown="OnListMouseDown" PreviewMouseMove="OnListMouseMove"
                          DragOver="OnListDragOver" DragLeave="OnListDragLeave" Drop="OnListDrop"

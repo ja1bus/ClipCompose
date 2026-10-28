@@ -67,6 +67,12 @@
   <data name="ButtonDown" xml:space="preserve">
     <value>下へ</value>
   </data>
+  <data name="ButtonDuplicate" xml:space="preserve">
+    <value>複製</value>
+  </data>
+  <data name="ButtonDuplicateTip" xml:space="preserve">
+    <value>名前・本文・カテゴリを引き継いだ新しいテンプレートを作ります</value>
+  </data>
   <data name="ButtonExport" xml:space="preserve">
     <value>エクスポート…</value>
   </data>
@@ -74,7 +80,10 @@
     <value>使い方</value>
   </data>
   <data name="ButtonImport" xml:space="preserve">
-    <value>インポート（全件置換）…</value>
+    <value>全件置換で復元…</value>
+  </data>
+  <data name="ButtonImportAppend" xml:space="preserve">
+    <value>追加インポート…</value>
   </data>
   <data name="ButtonMoveTip" xml:space="preserve">
     <value>カテゴリの見出しを選んでいればカテゴリを、テンプレートを選んでいればカテゴリ内でテンプレートを動かします。</value>
@@ -121,14 +130,31 @@
   <data name="CategoryNameRenamePrompt" xml:space="preserve">
     <value>カテゴリの名前</value>
   </data>
+  <data name="ConfirmDeleteCategoryFinalFormat" xml:space="preserve">
+    <value>本当に「{0}」を削除しますか？この操作は［元に戻す］では戻せません。
+
+削除する前のデータは、データのフォルダーに templates.before-delete-（日時）.json として残ります。戻すときは、［全般］タブの［全件置換で復元］でこのファイルを選んでください。</value>
+  </data>
   <data name="ConfirmDeleteCategoryFormat" xml:space="preserve">
     <value>カテゴリ「{0}」を削除しますか？</value>
+  </data>
+  <data name="ConfirmDeleteCategoryPinned" xml:space="preserve">
+    <value>固定中のテンプレートが含まれています。固定も解除されます。</value>
+  </data>
+  <data name="ConfirmDeleteCategoryWithTemplatesFormat" xml:space="preserve">
+    <value>カテゴリ「{0}」と、その中のテンプレート {1} 件を削除しますか？</value>
   </data>
   <data name="ConfirmDeleteTemplateFormat" xml:space="preserve">
     <value>テンプレート「{0}」を削除しますか？</value>
   </data>
   <data name="ConfirmDeleteTemplatePinned" xml:space="preserve">
     <value>このテンプレートは固定されています。削除すると固定も解除されます（別のテンプレートは自動で固定しません）。</value>
+  </data>
+  <data name="CopySuffix" xml:space="preserve">
+    <value>（コピー）</value>
+  </data>
+  <data name="CopySuffixNumberedFormat" xml:space="preserve">
+    <value>（コピー {0}）</value>
   </data>
   <data name="EditorBody" xml:space="preserve">
     <value>本文</value>
@@ -190,9 +216,27 @@
   <data name="ErrorTemplateNotFound" xml:space="preserve">
     <value>テンプレートが見つかりません。</value>
   </data>
+  <data name="ExportCountFormat" xml:space="preserve">
+    <value>カテゴリ {0} 件、テンプレート {1} 件</value>
+  </data>
   <data name="ExportDoneFormat" xml:space="preserve">
     <value>エクスポートしました:
 {0}</value>
+  </data>
+  <data name="ExportIntoDataFolder" xml:space="preserve">
+    <value>ClipCompose のデータのフォルダーにはエクスポートできません。別のフォルダーを選んでください。</value>
+  </data>
+  <data name="ExportNoCategories" xml:space="preserve">
+    <value>エクスポートするカテゴリがありません。</value>
+  </data>
+  <data name="ExportSelectNote" xml:space="preserve">
+    <value>選んだカテゴリのテンプレートをすべて、1 つのファイルに保存します。保存済みの内容を出力します（未保存の編集は含みません）。ホットキーなど、この PC の設定は含みません。</value>
+  </data>
+  <data name="ExportSelectOk" xml:space="preserve">
+    <value>保存先を選ぶ…</value>
+  </data>
+  <data name="ExportSelectPrompt" xml:space="preserve">
+    <value>エクスポートするカテゴリを選んでください</value>
   </data>
   <data name="FailClipboardBusy" xml:space="preserve">
     <value>他のアプリがクリップボードを使用中です。もう一度実行してください。</value>
@@ -222,6 +266,7 @@ ClipCompose は起動すると画面を出さずに通知領域に常駐しま�
 2. マウスで使う（ホットキー不要）
 トレイアイコンをクリックし、テンプレートを選んで Enter（またはダブルクリック）。結果がコピーされるので、貼り付け先で Ctrl+V します。トレイのメニューから固定テンプレートをコピーすることもできます。
 選択画面では、ピンのボタン（Ctrl+P）で固定・解除、［内容］（Ctrl+Space）で本文の表示、Alt+↑↓ またはドラッグでテンプレートの並べ替え（Alt+Shift+↑↓ または見出しのドラッグでカテゴリの並べ替え）ができます。［設定］で選択画面を閉じて設定画面を開きます。
+カテゴリの見出しをクリック（または検索欄が空のときに Enter・←→）すると、カテゴリを開閉できます。開閉の状態は次回も使います。検索欄では、テンプレート名とカテゴリ名で探せます（空白で区切ると、すべての語を含むものに絞ります）。
 新しいトレイアイコンは、Windows が［^］（隠れているインジケーターを表示）の中に入れることがあります。常に表示するには、［設定］＞［個人用設定］＞［タスク バー］＞［その他のシステム トレイ アイコン］で ClipCompose をオンにするか、アイコンをタスクバーへドラッグします。
 
 3. ホットキーで使う（任意）
@@ -234,7 +279,10 @@ ClipCompose は起動すると画面を出さずに通知領域に常駐しま�
 コピー元のアプリ（パスワード管理ソフトなど）が「履歴に含めない」「クラウドに同期しない」と指定した文章を差し込んだ場合、結果にも同じ指定を付けます。{{clipboard}} の無いテンプレートの結果は通常のコピーと同じで、Windows のクリップボードの履歴や PlainClip などのアプリの履歴に残ることがあります。これらの指定はすべてのアプリに対する保護を保証するものではありません。
 
 6. データ
-テンプレートと設定はこの PC の中だけに保存します（保存先は設定画面の［全般］タブに表示されます）。コピーした文章や結果は保存しません。別の PC への移行にはエクスポートとインポートを使います（インポートはすべてのテンプレートを置き換えます）。</value>
+テンプレートと設定はこの PC の中だけに保存します（保存先は設定画面の［全般］タブに表示されます）。コピーした文章や結果は保存しません。別の PC への移行にはエクスポートとインポートを使います。エクスポートは選んだカテゴリを 1 つのファイルに保存します。［追加インポート］はファイルから選んだカテゴリを今のデータに追加し、［全件置換で復元］はすべてのテンプレートをファイルの内容に置き換えます。
+
+7. サインイン時に起動する
+Microsoft Store 版では、設定画面の［全般］タブで［Windows へのサインイン時に起動する］をオンにできます。既定はオフです。Windows の設定（スタートアップ アプリ）でオフにした場合は、Windows の設定でオンにしてください。</value>
   </data>
   <data name="GuideTitle" xml:space="preserve">
     <value>ClipCompose の使い方</value>
@@ -260,16 +308,46 @@ ClipCompose は起動すると画面を出さずに通知領域に常駐しま�
   <data name="HotkeyUnassigned" xml:space="preserve">
     <value>未設定</value>
   </data>
+  <data name="ImportAppendDoneFormat" xml:space="preserve">
+    <value>取り込みました。追加したカテゴリ {0} 件、中身を置き換えたカテゴリ {1} 件、テンプレート {2} 件です。</value>
+  </data>
   <data name="ImportConfirmFormat" xml:space="preserve">
     <value>現在のテンプレートをすべて、このファイルの内容に置き換えますか？
 
 現在: カテゴリ {0} 件、テンプレート {1} 件
 インポート: カテゴリ {2} 件、テンプレート {3} 件
 
-置き換える前に、現在のデータをデータのフォルダーへバックアップします。固定テンプレートは解除されます。ホットキーなどこの PC の設定は変わりません。</value>
+ファイルに含まれない現在のカテゴリも削除されます。置き換える前に、現在のデータをデータのフォルダーへバックアップします。固定テンプレートは解除されます。ホットキーなどこの PC の設定は変わりません。</value>
   </data>
   <data name="ImportDoneFormat" xml:space="preserve">
     <value>カテゴリ {0} 件、テンプレート {1} 件をインポートしました。</value>
+  </data>
+  <data name="ImportNoCategories" xml:space="preserve">
+    <value>このファイルには取り込むカテゴリがありません。</value>
+  </data>
+  <data name="ImportResultAddFormat" xml:space="preserve">
+    <value>「{0}」として追加</value>
+  </data>
+  <data name="ImportResultRenamedFormat" xml:space="preserve">
+    <value>同名あり:「{0}」として追加</value>
+  </data>
+  <data name="ImportResultReplaceFormat" xml:space="preserve">
+    <value>既存の「{0}」の中身を置き換え</value>
+  </data>
+  <data name="ImportSelectNote" xml:space="preserve">
+    <value>現在のカテゴリとテンプレートはそのまま残ります。同じ名前のカテゴリがある場合は、別のカテゴリとして追加するか、中身をファイルの内容に置き換えるかを選べます（同じ名前のテンプレートの固定は保たれます）。取り込む前のデータは、データのフォルダーに残します。</value>
+  </data>
+  <data name="ImportSelectOk" xml:space="preserve">
+    <value>追加する</value>
+  </data>
+  <data name="ImportSelectPrompt" xml:space="preserve">
+    <value>取り込むカテゴリを選んでください</value>
+  </data>
+  <data name="ImportSuffix" xml:space="preserve">
+    <value>（取り込み）</value>
+  </data>
+  <data name="ImportSuffixNumberedFormat" xml:space="preserve">
+    <value>（取り込み {0}）</value>
   </data>
   <data name="ImportUnpinFailedFormat" xml:space="preserve">
     <value>固定テンプレートを先に解除できなかったため、インポートしませんでした。
@@ -325,11 +403,20 @@ ClipCompose は起動すると画面を出さずに通知領域に常駐しま�
   <data name="PickerAutoPasteTip" xml:space="preserve">
     <value>結果をコピーして、元のウィンドウへ貼り付けます。クリップボードは、ホットキーを押した時点ではなく、確定した時点の内容を使います。</value>
   </data>
+  <data name="PickerCollapseAll" xml:space="preserve">
+    <value>すべて閉じる</value>
+  </data>
+  <data name="PickerCollapseNotSaved" xml:space="preserve">
+    <value>カテゴリの開閉の状態を保存できませんでした。ClipCompose を終了するまでは保持します。</value>
+  </data>
   <data name="PickerCopyOnly" xml:space="preserve">
     <value>コピーのみ</value>
   </data>
   <data name="PickerCopyOnlyTip" xml:space="preserve">
     <value>結果をコピーします。Ctrl+V で貼り付けてください。クリップボードは、この画面を開いた時点ではなく、確定した時点の内容を使います。</value>
+  </data>
+  <data name="PickerExpandAll" xml:space="preserve">
+    <value>すべて開く</value>
   </data>
   <data name="PickerFixedHotkeyFormat" xml:space="preserve">
     <value>固定: {0}</value>
@@ -338,7 +425,7 @@ ClipCompose は起動すると画面を出さずに通知領域に常駐しま�
     <value>Enter: 実行　Ctrl+P: 固定　Alt+↑↓: 並べ替え</value>
   </data>
   <data name="PickerHintTip" xml:space="preserve">
-    <value>Alt+Shift+↑↓ でカテゴリを動かします。テンプレートやカテゴリの見出しはドラッグでも動かせます。Ctrl+Space で本文を表示します。</value>
+    <value>カテゴリの見出しのクリック、Enter、←→（検索欄が空のとき）でカテゴリを開閉します。Alt+Shift+↑↓ でカテゴリを動かします。テンプレートやカテゴリの見出しはドラッグでも動かせます。PageUp/PageDown で 10 行ずつ移動します。Ctrl+Space で本文を表示します。</value>
   </data>
   <data name="PickerNoMatch" xml:space="preserve">
     <value>一致するテンプレートはありません</value>
@@ -353,7 +440,7 @@ ClipCompose は起動すると画面を出さずに通知領域に常駐しま�
     <value>テンプレートの本文を表示・非表示にします（Ctrl+Space）</value>
   </data>
   <data name="PickerSearch" xml:space="preserve">
-    <value>名前で検索</value>
+    <value>テンプレート・カテゴリ名で検索</value>
   </data>
   <data name="PickerSettings" xml:space="preserve">
     <value>設定</value>
@@ -443,6 +530,15 @@ ClipCompose は起動すると画面を出さずに通知領域に常駐しま�
   <data name="RowCategoryFormat" xml:space="preserve">
     <value>カテゴリ: {0}</value>
   </data>
+  <data name="RowCollapsed" xml:space="preserve">
+    <value>閉じています</value>
+  </data>
+  <data name="RowCountFormat" xml:space="preserve">
+    <value>{0} 件</value>
+  </data>
+  <data name="RowExpanded" xml:space="preserve">
+    <value>開いています</value>
+  </data>
   <data name="RowPinTip" xml:space="preserve">
     <value>固定する: 固定モードのホットキーで実行します（Ctrl+P）</value>
   </data>
@@ -461,6 +557,39 @@ ClipCompose は起動すると画面を出さずに通知領域に常駐しま�
 
 {1}</value>
   </data>
+  <data name="SelectAllVisible" xml:space="preserve">
+    <value>表示中をすべて選択</value>
+  </data>
+  <data name="SelectChecked" xml:space="preserve">
+    <value>選択</value>
+  </data>
+  <data name="SelectHiddenFormat" xml:space="preserve">
+    <value>（検索で隠れている {0} 件を含む）</value>
+  </data>
+  <data name="SelectModeAdd" xml:space="preserve">
+    <value>別カテゴリで追加</value>
+  </data>
+  <data name="SelectModeLabel" xml:space="preserve">
+    <value>取り込み方</value>
+  </data>
+  <data name="SelectModeReplace" xml:space="preserve">
+    <value>中身を置き換え</value>
+  </data>
+  <data name="SelectNoMatch" xml:space="preserve">
+    <value>一致するカテゴリはありません</value>
+  </data>
+  <data name="SelectNoneVisible" xml:space="preserve">
+    <value>表示中をすべて解除</value>
+  </data>
+  <data name="SelectSearch" xml:space="preserve">
+    <value>カテゴリ名で検索</value>
+  </data>
+  <data name="SelectSummaryFormat" xml:space="preserve">
+    <value>選択: カテゴリ {0} 件・テンプレート {1} 件</value>
+  </data>
+  <data name="SelectUnchecked" xml:space="preserve">
+    <value>未選択</value>
+  </data>
   <data name="SettingsAppliedNote" xml:space="preserve">
     <value>このタブの変更はすぐに反映されます。ホットキーは入力欄から離れたときに登録します。</value>
   </data>
@@ -477,7 +606,7 @@ ClipCompose は起動すると画面を出さずに通知領域に常駐しま�
     <value>保存先: {0}</value>
   </data>
   <data name="SettingsDataNote" xml:space="preserve">
-    <value>エクスポートとインポートで、別の PC へテンプレートを移せます。ホットキーなど、この PC の設定は含みません。</value>
+    <value>エクスポートは、選んだカテゴリを 1 つのファイルに保存します。［追加インポート］はファイルのカテゴリを今のデータに追加し、［全件置換で復元］はすべてのテンプレートをファイルの内容に置き換えます。ホットキーなど、この PC の設定は含みません。</value>
   </data>
   <data name="SettingsDuplicateHotkey" xml:space="preserve">
     <value>通常モードと固定モードには別のキーを設定してください。</value>
@@ -521,6 +650,15 @@ ClipCompose は起動すると画面を出さずに通知領域に常駐しま�
   <data name="SettingsNormalHotkey" xml:space="preserve">
     <value>通常モード（テンプレートを選択）:</value>
   </data>
+  <data name="SettingsStartup" xml:space="preserve">
+    <value>起動</value>
+  </data>
+  <data name="SettingsStartupCheck" xml:space="preserve">
+    <value>Windows へのサインイン時に起動する</value>
+  </data>
+  <data name="SettingsStartupOpenWindows" xml:space="preserve">
+    <value>Windows の［スタートアップ アプリ］を開く</value>
+  </data>
   <data name="SettingsTitle" xml:space="preserve">
     <value>ClipCompose の設定</value>
   </data>
@@ -538,6 +676,27 @@ ClipCompose は起動すると画面を出さずに通知領域に常駐しま�
   </data>
   <data name="ShortcutRequiresModifier" xml:space="preserve">
     <value>Ctrl・Alt・Win のいずれかと組み合わせてください（Shift だけでは設定できません）。</value>
+  </data>
+  <data name="StartupChangeFailed" xml:space="preserve">
+    <value>自動起動の設定を変更できませんでした。</value>
+  </data>
+  <data name="StartupDisabledByPolicy" xml:space="preserve">
+    <value>組織のポリシーでオフにされているため、ここでは変更できません。</value>
+  </data>
+  <data name="StartupDisabledByUser" xml:space="preserve">
+    <value>Windows の設定（スタートアップ アプリ）でオフにされています。使う場合は Windows の設定でオンにしてください。</value>
+  </data>
+  <data name="StartupEnabled" xml:space="preserve">
+    <value>Windows にサインインすると ClipCompose が起動します。</value>
+  </data>
+  <data name="StartupEnabledByPolicy" xml:space="preserve">
+    <value>組織のポリシーでオンにされているため、ここでは変更できません。</value>
+  </data>
+  <data name="StartupUnknown" xml:space="preserve">
+    <value>自動起動の状態を読み取れませんでした。Windows の設定の［スタートアップ アプリ］で確認してください。</value>
+  </data>
+  <data name="StartupUnsupported" xml:space="preserve">
+    <value>Microsoft Store 版で使えます（この実行環境では使えません）。</value>
   </data>
   <data name="StatusSaveBlocked" xml:space="preserve">
     <value>テンプレートのファイルを読み込めなかったため、保存を停止しています。</value>

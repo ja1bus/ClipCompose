@@ -303,6 +303,41 @@ public sealed class AppHost : IDisposable
     }
 
     /// <summary>
+    /// 選択画面で閉じているカテゴリを覚える。無くなったカテゴリの ID は除く（テンプレートを読めていないときは除かない）。
+    /// 保存できなくても、この起動中は覚えておく。失敗の理由（成功なら空文字）。
+    /// </summary>
+    public string SetCollapsedCategories(IEnumerable<Guid> ids)
+    {
+        var known = TemplatesBlocked ? null : Library.Categories.Select(c => c.Id).ToHashSet();
+        var updated = _settings.Clone();
+        updated.CollapsedCategoryIds = [.. ids.Where(id => known is null || known.Contains(id)).Distinct()];
+        if (updated.CollapsedCategoryIds.SequenceEqual(_settings.CollapsedCategoryIds)) return "";
+        var result = _settingsStore.Save(updated);
+        _settings = updated;
+        if (result.Succeeded) return "";
+        ErrorLog.Write("Could not save which categories are collapsed");
+        return result.Problem;
+    }
+
+    /// <summary>
+    /// カテゴリを中のテンプレートごと削除する（設定画面で 2 回確かめた後）。削除の前のデータを日時付きの名前（before-delete）で残す。
+    /// 固定のテンプレートが含まれる場合は、先に固定の解除を保存する（できなければ削除しない）。失敗の理由（成功なら空文字）。
+    /// </summary>
+    public string DeleteCategoryWithTemplates(Guid id)
+    {
+        if (TemplatesBlocked) return string.Format(Strings.SaveBlockedFormat, _templates.FilePath);
+        var edit = Library.DeleteCategoryWithTemplates(id);
+        if (!edit.Succeeded) return TemplateRules.Describe(edit.Error, category: true);
+        var removed = Library.TemplatesIn(id).Select(t => t.Id).ToHashSet();
+        var outcome = ImportProcedure.SaveRemoving(_templates, _settingsStore, _settings, edit.Library!, removed, "before-delete");
+        _settings = outcome.Settings;
+        if (outcome.Succeeded) Library = edit.Library!;
+        else ErrorLog.Write("Deleting a category with its templates failed");
+        RefreshStatus();
+        return outcome.Problem;
+    }
+
+    /// <summary>
     /// 設定画面での変更。ホットキーの登録と保存に成功した場合だけ反映する。失敗したら以前のホットキーに戻し、理由を返す。
     /// </summary>
     public string ApplySettings(AppSettings updated)
@@ -465,25 +500,85 @@ public sealed class AppHost : IDisposable
 
     // ---- インポート・エクスポート・復旧 ----
 
-    public void Import(Window owner)
+    /// <summary>ファイルを選んで全件検証する。キャンセル・失敗なら null（失敗の理由は表示済み）。</summary>
+    private TemplateLibrary? ChooseImportFile(Window owner)
     {
         if (TemplatesBlocked)
         {
             ShowMessage(string.Format(Strings.SaveBlockedFormat, _templates.FilePath), MessageBoxImage.Warning, owner);
-            return;
+            return null;
         }
         var dialog = new OpenFileDialog { Filter = Strings.FileDialogFilter, CheckFileExists = true };
-        if (dialog.ShowDialog(owner) != true) return;
+        if (dialog.ShowDialog(owner) != true) return null;
+        // 選ばなかったカテゴリも含め、ファイル全体を検証する（不正なカテゴリだけを黙って読み飛ばさない）。
         var parsed = _templates.ReadImport(dialog.FileName);
         if (!parsed.Succeeded)
         {
             ShowMessage(parsed.Problem, MessageBoxImage.Warning, owner);
+            return null;
+        }
+        return parsed.Library!;
+    }
+
+    /// <summary>
+    /// 追加インポート（仕様書 §11）。ファイルから選んだカテゴリを、既存のデータを残して取り込む。
+    /// 現在のデータを before-import として残してから、結合した全体を一度だけ保存する。未保存の確認は呼び出し側で済ませている。
+    /// </summary>
+    public void ImportAppend(Window owner)
+    {
+        if (ChooseImportFile(owner) is not { } file) return;
+        if (file.Categories.Count == 0)
+        {
+            ShowMessage(Strings.ImportNoCategories, MessageBoxImage.Information, owner);
             return;
         }
-        var imported = parsed.Library!;
+        var current = Library;
+        var choices = file.Categories
+            .Select(c => new CategoryChoice(c, file.CountIn(c.Id), LibraryMerge.SameName(current, c.Name) is not null, forImport: true))
+            .ToList();
+        var chosen = CategorySelectWindow.Ask(owner, Strings.ImportSelectPrompt, Strings.ImportSelectNote, Strings.ImportSelectOk, choices,
+            all => ShowMergePlan(current, file, all));
+        if (chosen is null) return;
+        // 選んでいる間に保存済みのデータが変わっていても、最新の内容に対して組み立て直す。
+        var plan = LibraryMerge.Plan(Library, file, chosen.ToDictionary(c => c.Category.Id, c => c.Mode));
+        var merged = LibraryMerge.Apply(Library, file, plan);
+        var outcome = ImportProcedure.SaveRemoving(_templates, _settingsStore, _settings, merged.Library, merged.RemovedTemplateIds, "before-import");
+        _settings = outcome.Settings;
+        if (!outcome.Succeeded)
+        {
+            RefreshStatus();
+            ShowMessage(outcome.Problem, MessageBoxImage.Warning, owner);
+            return;
+        }
+        Library = merged.Library;
+        _settingsWindow?.ReloadAfterReplace();
+        RefreshStatus();
+        var added = plan.Count(p => p.Mode == MergeMode.AddAsNew);
+        var replaced = plan.Count - added;
+        ShowMessage(string.Format(Strings.ImportAppendDoneFormat, added, replaced, plan.Sum(p => p.TemplateCount)), MessageBoxImage.Information, owner);
+    }
+
+    /// <summary>選択画面の各行に、取り込んだ後の名前・取り込み方を表示する。</summary>
+    private static void ShowMergePlan(TemplateLibrary current, TemplateLibrary file, IReadOnlyList<CategoryChoice> all)
+    {
+        var plan = LibraryMerge.Plan(current, file, all.Where(c => c.IsChecked).ToDictionary(c => c.Category.Id, c => c.Mode))
+            .ToDictionary(p => p.Source.Id);
+        foreach (var choice in all)
+        {
+            choice.ResultText = !plan.TryGetValue(choice.Category.Id, out var step) ? ""
+                : step.Mode == MergeMode.ReplaceContents ? string.Format(Strings.ImportResultReplaceFormat, step.ResultName)
+                : step.ResultName == choice.Name ? string.Format(Strings.ImportResultAddFormat, step.ResultName)
+                : string.Format(Strings.ImportResultRenamedFormat, step.ResultName);
+        }
+    }
+
+    /// <summary>全件置換で復元（ファイルの内容ですべてを置き換える）。未保存の確認は呼び出し側で済ませている。</summary>
+    public void ImportReplace(Window owner)
+    {
+        if (ChooseImportFile(owner) is not { } imported) return;
         var confirm = string.Format(Strings.ImportConfirmFormat,
             Library.Categories.Count, Library.Templates.Count, imported.Categories.Count, imported.Templates.Count);
-        if (MessageBox.Show(owner, confirm, "ClipCompose", MessageBoxButton.OKCancel, MessageBoxImage.Question, MessageBoxResult.Cancel) != MessageBoxResult.OK)
+        if (MessageBox.Show(owner, confirm, "ClipCompose", MessageBoxButton.OKCancel, MessageBoxImage.Warning, MessageBoxResult.Cancel) != MessageBoxResult.OK)
             return;
         // 置換後は固定を解除する（同じ ID が含まれていても）。解除を先に保存し、失敗したら置き換えない。
         var outcome = ImportProcedure.Replace(_templates, _settingsStore, _settings, imported);
@@ -500,6 +595,10 @@ public sealed class AppHost : IDisposable
         ShowMessage(string.Format(Strings.ImportDoneFormat, imported.Categories.Count, imported.Templates.Count), MessageBoxImage.Information, owner);
     }
 
+    /// <summary>
+    /// 選んだカテゴリを 1 つのファイルにエクスポートする（保存済みの内容。PC ごとの設定は含めない）。
+    /// 複数のカテゴリを選んでもファイルは分けない。
+    /// </summary>
     public void Export(Window owner)
     {
         if (TemplatesBlocked)
@@ -507,16 +606,35 @@ public sealed class AppHost : IDisposable
             ShowMessage(string.Format(Strings.SaveBlockedFormat, _templates.FilePath), MessageBoxImage.Warning, owner);
             return;
         }
+        var library = Library;
+        if (library.Categories.Count == 0)
+        {
+            ShowMessage(Strings.ExportNoCategories, MessageBoxImage.Information, owner);
+            return;
+        }
+        var choices = library.Categories.Select(c => new CategoryChoice(c, library.CountIn(c.Id), hasSameName: false, forImport: false)).ToList();
+        var chosen = CategorySelectWindow.Ask(owner, Strings.ExportSelectPrompt, Strings.ExportSelectNote, Strings.ExportSelectOk, choices);
+        if (chosen is null) return;
+        var subset = library.Subset(chosen.Select(c => c.Category.Id));
         var dialog = new SaveFileDialog
         {
             Filter = Strings.FileDialogFilter,
-            FileName = $"ClipCompose-templates-{DateTime.Now:yyyyMMdd}.json",
+            FileName = ExportFileName.Suggest([.. subset.Categories.Select(c => c.Name)], DateTime.Now),
             AddExtension = true,
             DefaultExt = ".json",
         };
         if (dialog.ShowDialog(owner) != true) return;
-        var result = _templates.Export(dialog.FileName, Library);
-        ShowMessage(result.Succeeded ? string.Format(Strings.ExportDoneFormat, dialog.FileName) : result.Problem,
+        // アプリが管理するファイル（templates.json・settings.json・バックアップ・ログ）を上書きしない。
+        if (ExportFileName.IsInDataDirectory(dialog.FileName, _templates.Directory))
+        {
+            ShowMessage(Strings.ExportIntoDataFolder, MessageBoxImage.Warning, owner);
+            return;
+        }
+        var result = _templates.Export(dialog.FileName, subset);
+        ShowMessage(result.Succeeded
+                ? string.Format(Strings.ExportDoneFormat, dialog.FileName) + Environment.NewLine + Environment.NewLine
+                    + string.Format(Strings.ExportCountFormat, subset.Categories.Count, subset.Templates.Count)
+                : result.Problem,
             result.Succeeded ? MessageBoxImage.Information : MessageBoxImage.Warning, owner);
     }
 

@@ -11,7 +11,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>ClipCompose</RootNamespace>
     <AssemblyName>ClipCompose</AssemblyName>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
     <ApplicationIcon>Resources/icon.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <!--
@@ -37,12 +37,20 @@
   </PropertyGroup>
   <!--
     Microsoft Store 用の MSIX。installer/msix/build-msix.ps1 が -p:ClipComposeMsix=true で publish する。
-    Store から入れた PC に .NET 10 Desktop Runtime があるとは限らないため、MSIX の中身だけは .NET を内包する（Self-contained・複数ファイル）。
-    自動起動を持たないため、AreaShot・PlainClip と違って Windows の版付きの TargetFramework（StartupTask 用）は使わない。
+    - サインイン時の自動起動（1.1.0〜）に StartupTask（WinRT）を使うため、TargetFramework に Windows の版を付けて定数 MSIX を定義する
+      （PlainClip と同じ方式。通常のビルド・テスト・Inno Setup の確認版は net10.0-windows のままで、自動起動は「未対応」と表示する）。
+    - Store から入れた PC に .NET 10 Desktop Runtime があるとは限らないため、MSIX の中身だけは .NET を内包する（Self-contained・複数ファイル）。
   -->
   <PropertyGroup Condition="'$(ClipComposeMsix)' == 'true'">
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <DefineConstants>$(DefineConstants);MSIX</DefineConstants>
     <SelfContained>true</SelfContained>
   </PropertyGroup>
+  <ItemGroup Condition="'$(ClipComposeMsix)' == 'true'">
+    <!-- Windows API の型の定義（StartupTask だけに使う）。ReadyToRun にすると大きくなるため除外する。 -->
+    <PublishReadyToRunExclude Include="Microsoft.Windows.SDK.NET.dll" />
+  </ItemGroup>
   <!--
     ライセンス表記。MIT License の全文と第三者のソフトウェアの表記を、配布物の exe と同じフォルダーへ入れる（設定画面のバージョン情報から開く）。
     scripts では public-repo/ にある原本、公開リポジトリではルートにある同名のファイルを使う（公開リポジトリのビルドが public-repo/ に依存しないように）。

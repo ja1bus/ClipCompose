@@ -1,3 +1,5 @@
+using ClipCompose.Core.Localization;
+
 namespace ClipCompose.Core.Model;
 
 /// <summary>編集の結果。成功なら新しいライブラリ、失敗なら理由（元のライブラリは変わらない）。</summary>
@@ -28,11 +30,27 @@ public sealed class TemplateLibrary
     /// <summary>全テンプレート。カテゴリ内の表示順は、この並びでそのカテゴリのものを取り出した順。</summary>
     public IReadOnlyList<Template> Templates { get; }
 
+    // 大量の項目でも一覧・検索を速くするための索引。変更できない値なので、最初に使うときに一度だけ作る。
+    private ILookup<Guid, Template>? _byCategory;
+    private Dictionary<Guid, Template>? _byId;
+
     public Category? FindCategory(Guid id) => Categories.FirstOrDefault(c => c.Id == id);
 
-    public Template? FindTemplate(Guid id) => Templates.FirstOrDefault(t => t.Id == id);
+    public Template? FindTemplate(Guid id) => (_byId ??= Templates.ToDictionary(t => t.Id)).GetValueOrDefault(id);
 
-    public IEnumerable<Template> TemplatesIn(Guid categoryId) => Templates.Where(t => t.CategoryId == categoryId);
+    public IEnumerable<Template> TemplatesIn(Guid categoryId) => (_byCategory ??= Templates.ToLookup(t => t.CategoryId))[categoryId];
+
+    /// <summary>カテゴリのテンプレートの件数。</summary>
+    public int CountIn(Guid categoryId) => (_byCategory ??= Templates.ToLookup(t => t.CategoryId))[categoryId].Count();
+
+    /// <summary>
+    /// 選んだカテゴリと、その全テンプレートだけのライブラリ（カテゴリ単位のエクスポート）。ID・名前・本文・順序はそのまま。
+    /// </summary>
+    public TemplateLibrary Subset(IEnumerable<Guid> categoryIds)
+    {
+        var chosen = categoryIds.ToHashSet();
+        return new TemplateLibrary([.. Categories.Where(c => chosen.Contains(c.Id))], [.. Templates.Where(t => chosen.Contains(t.CategoryId))]);
+    }
 
     /// <summary>カテゴリの表示順にテンプレートを並べた一覧（選択画面・トレイ用）。</summary>
     public IEnumerable<Template> TemplatesInDisplayOrder() => Categories.SelectMany(c => TemplatesIn(c.Id));
@@ -59,6 +77,23 @@ public sealed class TemplateLibrary
         if (FindCategory(id) is null) return LibraryEdit.Fail(LibraryError.CategoryNotFound);
         if (TemplatesIn(id).Any()) return LibraryEdit.Fail(LibraryError.CategoryNotEmpty);
         return new(new TemplateLibrary([.. Categories.Where(c => c.Id != id)], Templates), LibraryError.None, id);
+    }
+
+    /// <summary>カテゴリを、中のテンプレートごと削除する（設定画面で 2 回確かめてから）。</summary>
+    public LibraryEdit DeleteCategoryWithTemplates(Guid id)
+    {
+        if (FindCategory(id) is null) return LibraryEdit.Fail(LibraryError.CategoryNotFound);
+        return new(new TemplateLibrary([.. Categories.Where(c => c.Id != id)], [.. Templates.Where(t => t.CategoryId != id)]), LibraryError.None, id);
+    }
+
+    /// <summary>
+    /// 複製の名前の初期値（「元の名前（コピー）」、重なれば「（コピー 2）」以降）。<paramref name="categoryId"/> の中で重ならない名前にする。
+    /// </summary>
+    public string SuggestCopyName(Guid categoryId, string name)
+    {
+        var taken = TemplatesIn(categoryId).Select(t => t.Name).ToList();
+        return UniqueName.Make(name, TemplateRules.TemplateNameMax, Strings.CopySuffix, Strings.CopySuffixNumberedFormat,
+            candidate => taken.Any(t => TemplateRules.SameName(t, candidate)));
     }
 
     /// <summary>カテゴリを <paramref name="offset"/> だけ動かす（-1 = 上へ、+1 = 下へ）。端を越える場合は変えない。</summary>

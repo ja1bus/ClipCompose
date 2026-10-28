@@ -15,7 +15,10 @@
             <Setter Property="Margin" Value="0,0,0,4" />
         </Style>
         <DataTemplate DataType="{x:Type v:CategoryRow}">
-            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="#444" Margin="2,4,2,2" TextTrimming="CharacterEllipsis" />
+            <DockPanel Margin="2,4,4,2">
+                <TextBlock DockPanel.Dock="Right" Text="{Binding CountText}" ToolTip="{Binding CountTip}" Foreground="#777" FontSize="12" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="#444" Margin="0,0,6,0" TextTrimming="CharacterEllipsis" />
+            </DockPanel>
         </DataTemplate>
         <DataTemplate DataType="{x:Type v:TemplateRow}">
             <Grid Margin="16,1,2,1">
@@ -53,10 +56,18 @@
             <!-- カテゴリとテンプレート（1 つの一覧） -->
             <DockPanel Margin="0,0,12,0">
                 <TextBlock DockPanel.Dock="Top" Text="{x:Static l:Strings.TemplatesHeader}" Style="{StaticResource Header}" />
+                <!-- テンプレート名・カテゴリ名の検索（選択画面と同じ判定）。絞り込み中は並べ替えない。 -->
+                <Grid DockPanel.Dock="Top" Margin="0,0,0,6">
+                    <TextBox x:Name="SearchBox" Padding="4,2" VerticalContentAlignment="Center" TextChanged="OnSearchChanged"
+                             AutomationProperties.Name="{x:Static l:Strings.PickerSearch}" />
+                    <TextBlock x:Name="SearchPlaceholder" Text="{x:Static l:Strings.PickerSearch}" Foreground="Gray"
+                               Margin="7,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False" />
+                </Grid>
                 <StackPanel DockPanel.Dock="Bottom" Margin="0,6,0,0">
                     <WrapPanel>
                         <Button x:Name="AddCategoryButton" Content="{x:Static l:Strings.ButtonAddCategory}" Click="OnAddCategory" />
                         <Button x:Name="NewTemplateButton" Content="{x:Static l:Strings.ButtonNewTemplate}" Click="OnNewTemplate" />
+                        <Button x:Name="DuplicateButton" Content="{x:Static l:Strings.ButtonDuplicate}" ToolTip="{x:Static l:Strings.ButtonDuplicateTip}" Click="OnDuplicate" />
                     </WrapPanel>
                     <WrapPanel>
                         <Button x:Name="UpButton" Content="{x:Static l:Strings.ButtonUp}" ToolTip="{x:Static l:Strings.ButtonMoveTip}" Click="OnMoveUp" />
@@ -77,10 +88,13 @@
                 </StackPanel>
                 <Grid>
                     <ListBox x:Name="List" SelectionChanged="OnSelected" HorizontalContentAlignment="Stretch"
+                             VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled" MouseDoubleClick="OnListDoubleClick"
                              AutomationProperties.Name="{x:Static l:Strings.TemplatesHeader}" />
                     <TextBlock x:Name="NoCategoriesText" Text="{x:Static l:Strings.NoCategoriesHint}" Foreground="Gray" TextWrapping="Wrap"
                                Margin="10" VerticalAlignment="Top" IsHitTestVisible="False" />
+                    <TextBlock x:Name="NoMatchText" Text="{x:Static l:Strings.PickerNoMatch}" Foreground="Gray" TextWrapping="Wrap"
+                               Margin="10" VerticalAlignment="Top" IsHitTestVisible="False" Visibility="Collapsed" />
                 </Grid>
             </DockPanel>
 

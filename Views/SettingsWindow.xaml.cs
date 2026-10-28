@@ -48,6 +48,8 @@ public partial class SettingsWindow : Window
         Editor.Attach(host);
         LoadSettings();
         UpdateStatus();
+        // 自動起動の状態は Windows 側で変わることがあるため、画面を前面に戻すたびに読み直す（定期的には読まない）。
+        Activated += (_, _) => RefreshStartup();
 
         // 入力中は登録済みのホットキーを解除し、今のキーを押しても実行されないようにする。入力欄から離れたら登録する。
         foreach (var box in new[] { NormalBox, FixedBox })
@@ -120,7 +122,7 @@ public partial class SettingsWindow : Window
     {
         ShowHotkeyStatus(NormalStatus, NormalBox, _host.Hotkeys.Normal);
         ShowHotkeyStatus(FixedStatus, FixedBox, _host.Hotkeys.Fixed);
-        ImportButton.IsEnabled = !_host.TemplatesBlocked;
+        ImportButton.IsEnabled = ImportAppendButton.IsEnabled = !_host.TemplatesBlocked;
         RecoveryButton.IsEnabled = _host.TemplatesBlocked || _host.SettingsBlocked;
         Editor.UpdateStatus();
     }
@@ -239,11 +241,70 @@ public partial class SettingsWindow : Window
 
     private static string? NullIfEmpty(string s) => s.Length == 0 ? null : s;
 
+    // ---- サインイン時の自動起動 ----
+
+    private bool _startupBusy;
+
+    private async void RefreshStartup()
+    {
+        if (_startupBusy) return;
+        _startupBusy = true;
+        try
+        {
+            ShowStartup(await StartupService.GetStateAsync());
+        }
+        finally
+        {
+            _startupBusy = false;
+        }
+    }
+
+    /// <summary>
+    /// チェックの操作。操作中は二重に操作させず、結果は Windows から読み直した状態で表示する
+    /// （有効にできなかった場合にチェックだけを付けたままにしない）。
+    /// </summary>
+    private async void OnStartupClick(object sender, RoutedEventArgs e)
+    {
+        var wanted = StartupBox.IsChecked == true;
+        if (_startupBusy) return;
+        _startupBusy = true;
+        StartupBox.IsEnabled = false;
+        try
+        {
+            var state = await StartupService.SetEnabledAsync(wanted);
+            ShowStartup(state);
+            if (wanted && !StartupStates.IsOn(state) && state != StartupState.DisabledByUser) ErrorText.Text = Strings.StartupChangeFailed;
+            else if (!wanted && StartupStates.IsOn(state)) ErrorText.Text = Strings.StartupChangeFailed;
+            else ClearError();
+        }
+        finally
+        {
+            _startupBusy = false;
+        }
+    }
+
+    private void ShowStartup(StartupState state)
+    {
+        var view = StartupStates.View(state);
+        StartupBox.IsChecked = view.Checked;
+        StartupBox.IsEnabled = view.CanChange;
+        StartupStatus.Text = view.Status;
+        StartupStatus.Visibility = view.Status.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
+        StartupSettingsButton.Visibility = view.ShowWindowsSettings ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void OnOpenStartupSettings(object sender, RoutedEventArgs e) => _host.OpenUrl(StartupService.WindowsSettingsUri, this);
+
     // ---- データ・その他 ----
 
     private void OnImport(object sender, RoutedEventArgs e)
     {
-        if (ConfirmLeaveEditor()) _host.Import(this);
+        if (ConfirmLeaveEditor()) _host.ImportReplace(this);
+    }
+
+    private void OnImportAppend(object sender, RoutedEventArgs e)
+    {
+        if (ConfirmLeaveEditor()) _host.ImportAppend(this);
     }
 
     private void OnExport(object sender, RoutedEventArgs e) => _host.Export(this);

@@ -88,21 +88,30 @@ public sealed class TemplateStore
     /// <summary>
     /// 現在のデータを日時付きの名前で写してから、全件置換する。写し・保存のどちらかに失敗したら現在のデータを変えない。
     /// </summary>
-    public StoreResult ReplaceWithImport(TemplateLibrary validated)
+    public StoreResult ReplaceWithImport(TemplateLibrary validated) => SaveAfterCopy(validated, "before-import");
+
+    /// <summary>
+    /// 現在のデータを日時付きの名前（templates.&lt;label&gt;-yyyyMMdd-HHmmss.json）で写してから保存する
+    /// （インポート "before-import"・中身のあるカテゴリの削除 "before-delete"）。保存する内容が上限を超える場合は写しも作らずに中止する。
+    /// 写し・保存のどちらかに失敗したら現在のデータを変えない。
+    /// </summary>
+    public StoreResult SaveAfterCopy(TemplateLibrary library, string label)
     {
         if (SaveBlocked) return new(false, string.Format(Strings.SaveBlockedFormat, FilePath));
+        var bytes = TemplateFileFormat.Serialize(library);
+        if (bytes.LongLength > SafeFile.MaxBytes) return TooLarge(FilePath);
         if (File.Exists(FilePath))
         {
             try
             {
-                SafeFile.CopyAside(FilePath, "before-import", _now());
+                SafeFile.CopyAside(FilePath, label, _now());
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
                 return new(false, string.Format(Strings.SaveFailedFormat, FilePath, ex.Message));
             }
         }
-        return Write(FilePath, validated, BackupPath);
+        return Write(FilePath, bytes, BackupPath);
     }
 
     private StoreResult Recover(TemplateLibrary library)
@@ -140,20 +149,26 @@ public sealed class TemplateStore
         return parsed.Succeeded ? parsed : parsed with { Problem = string.Format(Strings.LoadFailedFormat, path, parsed.Problem) };
     }
 
-    private static StoreResult Write(string path, TemplateLibrary library, string? backupPath)
+    private static StoreResult Write(string path, TemplateLibrary library, string? backupPath) =>
+        Write(path, TemplateFileFormat.Serialize(library), backupPath);
+
+    private static StoreResult Write(string path, byte[] bytes, string? backupPath)
     {
         try
         {
-            SafeFile.WriteAtomic(path, TemplateFileFormat.Serialize(library), backupPath);
+            SafeFile.WriteAtomic(path, bytes, backupPath);
             return StoreResult.Ok;
         }
         catch (FileTooLargeException)
         {
-            return new(false, string.Format(Strings.SaveFailedFormat, path, string.Format(Strings.ProblemTooLargeFormat, SafeFile.MaxBytes / 1024 / 1024)));
+            return TooLarge(path);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             return new(false, string.Format(Strings.SaveFailedFormat, path, ex.Message));
         }
     }
+
+    private static StoreResult TooLarge(string path) =>
+        new(false, string.Format(Strings.SaveFailedFormat, path, string.Format(Strings.ProblemTooLargeFormat, SafeFile.MaxBytes / 1024 / 1024)));
 }

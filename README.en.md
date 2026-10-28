@@ -8,13 +8,14 @@ This repository contains the source code of the publicly released ClipCompose.
 
 ## Features
 
-- Two levels of categories and templates: create, edit and reorder them on the Templates tab of Settings
+- Two levels of categories and templates: create, edit, duplicate, reorder and search them on the Templates tab of Settings
 - Write `{{clipboard}}` in a template, and it is replaced with the clipboard text when the template runs. A template without `{{clipboard}}` is copied as is, and the clipboard is not read
-- Chooser: pick from one list with category headings and press Enter. Search by name, show the template text, pin a template, and reorder with keys or by dragging
+- Chooser: pick from one list with category headings and press Enter. Collapse categories, search by template or category name, show the template text, pin a template, and reorder with keys or by dragging
 - Pinned template: pin one template and run it with the pinned mode hotkey without opening the chooser
 - Hotkeys (normal mode and pinned mode, not set by default) and optional automatic paste into the window you were using when you pressed the hotkey
 - If the source app marked the copied text as excluded from clipboard history (for example), the result gets the same marks
-- Export and import of templates (JSON)
+- Export the categories you choose, import (add) categories you choose from a file, and restore by replacing all templates (JSON)
+- Start when you sign in to Windows (Microsoft Store version, off by default)
 - English and Japanese user interface (follows the Windows display language, or can be set in Settings)
 
 ClipCompose does not monitor the clipboard or keep a history. Templates and settings are stored only on this PC, and ClipCompose sends nothing to the internet (see the privacy policy below). It does not send anything to AI services or get answers from them.

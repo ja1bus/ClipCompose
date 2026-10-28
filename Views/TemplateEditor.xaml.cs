@@ -9,10 +9,12 @@ using ClipCompose.Core.Text;
 namespace ClipCompose.Views;
 
 /// <summary>
-/// 設定画面の［テンプレート］タブ（仕様書 §4・§10）。カテゴリ見出し付きの 1 つの一覧と編集欄。
+/// 設定画面の［テンプレート］タブ（仕様書 §4・§10）。カテゴリ見出し付きの 1 つの一覧（検索欄付き）と編集欄。
 /// - 一覧・実行・固定は保存済みのデータだけを使う。編集中の内容は［保存］に成功するまで実行対象にしない。
 /// - 保存に失敗したら編集中の内容と「未保存」の表示を残し、再試行またはキャンセルできるようにする。
-/// - ↑↓は、カテゴリの見出しを選んでいればカテゴリを、テンプレートを選んでいればカテゴリ内でテンプレートを動かす。
+/// - ↑↓は、カテゴリの見出しを選んでいればカテゴリを、テンプレートを選んでいればカテゴリ内でテンプレートを動かす（検索中は動かさない）。
+/// - ［複製］は保存済みのテンプレートから名前・本文・カテゴリを引き継いだ新規編集を始める。［保存］するまで追加しない。
+/// - 検索は一覧を絞るだけで、編集中の内容は捨てない（編集中の項目が一覧から隠れても編集欄は残す）。
 /// </summary>
 public partial class TemplateEditor : UserControl
 {
@@ -50,6 +52,8 @@ public partial class TemplateEditor : UserControl
     private Window? Owner => Window.GetWindow(this);
 
     private TreeRow? SelectedRow => List.SelectedItem as TreeRow;
+
+    private string Query => SearchBox.Text.Trim();
 
     private Template? SelectedTemplate => (List.SelectedItem as TemplateRow)?.Template;
 
@@ -93,7 +97,7 @@ public partial class TemplateEditor : UserControl
         }
         // 編集中のカテゴリは ID で覚えておく。一覧を差し替えると選択が外れ、カテゴリは名前を含む値なので改名後は一致しないため。
         var editorCategory = (EditorCategoryBox.SelectedItem as Category)?.Id;
-        var rows = TreeRows.Build(library, _host.Fixed.Template?.Id, "", includeEmptyCategories: true);
+        var rows = TreeRows.From(TemplateListView.ForEditor(library, Query), _host.Fixed.Template?.Id, collapsible: false);
         _restoringSelection = true;
         var wasLoading = _loadingEditor;
         _loadingEditor = true;
@@ -112,9 +116,17 @@ public partial class TemplateEditor : UserControl
             _restoringSelection = false;
         }
         NoCategoriesText.Visibility = library.Categories.Count == 0 && !_host.TemplatesBlocked ? Visibility.Visible : Visibility.Collapsed;
+        NoMatchText.Visibility = rows.Count == 0 && library.Categories.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        SearchPlaceholder.Visibility = SearchBox.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
         // 編集中のテンプレートが無くなった（インポート・復旧）場合は編集を終える。
         if (_editing is not null && library.FindTemplate(_editing.Id) is null) LoadEditor(null, isNew: false);
         UpdateStatus();
+    }
+
+    private void OnSearchChanged(object sender, TextChangedEventArgs e)
+    {
+        if (!IsInitialized || _host is null) return;
+        Refresh();
     }
 
     /// <summary>
@@ -123,6 +135,7 @@ public partial class TemplateEditor : UserControl
     /// </summary>
     public void ReloadAfterReplace()
     {
+        SearchBox.Text = "";
         LoadEditor(_editingNew || _editing is null ? null : _host.Library.FindTemplate(_editing.Id), isNew: false);
         Refresh();
     }
@@ -145,9 +158,11 @@ public partial class TemplateEditor : UserControl
         var template = SelectedTemplate;
         AddCategoryButton.IsEnabled = !blocked;
         NewTemplateButton.IsEnabled = !blocked && _host.Library.Categories.Count > 0;
+        DuplicateButton.IsEnabled = !blocked && template is not null;
         RenameButton.IsEnabled = !blocked && row is CategoryRow;
         DeleteButton.IsEnabled = !blocked && row is not null;
-        UpButton.IsEnabled = DownButton.IsEnabled = !blocked && row is not null;
+        // 検索で絞っている間は、見えていない項目との位置関係が分からないため並べ替えない。
+        UpButton.IsEnabled = DownButton.IsEnabled = !blocked && row is not null && Query.Length == 0;
         PinButton.IsEnabled = template is not null && !_host.SettingsBlocked;
         PinText.Text = template is not null && template.Id == _host.Fixed.Template?.Id ? Strings.ButtonUnpin : Strings.ButtonPin;
 
@@ -229,6 +244,10 @@ public partial class TemplateEditor : UserControl
             return false;
         }
         LoadEditor(_host.Library.FindTemplate(id), isNew: false);
+        // 検索の条件に合わず保存した項目が一覧に出ない場合は、検索を解除して表示する。
+        if (Query.Length > 0 && _host.Library.FindTemplate(id) is { } saved && _host.Library.FindCategory(saved.CategoryId) is { } c
+            && !TemplateListView.Matches(saved, c, TemplateListView.Terms(Query)))
+            SearchBox.Text = "";
         Refresh(category.Id, id);
         return true;
     }
@@ -322,9 +341,10 @@ public partial class TemplateEditor : UserControl
 
     private void DeleteCategory(Category category)
     {
-        if (_host.Library.TemplatesIn(category.Id).Any())
+        var count = _host.Library.CountIn(category.Id);
+        if (count > 0)
         {
-            ShowError(Strings.ErrorCategoryNotEmpty);
+            DeleteCategoryWithTemplates(category, count);
             return;
         }
         if (!Confirm(string.Format(Strings.ConfirmDeleteCategoryFormat, category.Name))) return;
@@ -333,12 +353,38 @@ public partial class TemplateEditor : UserControl
         else Refresh();
     }
 
+    /// <summary>
+    /// 中にテンプレートがあるカテゴリの削除。誤操作を防ぐため 2 回確かめる（どちらも初期の選択はキャンセル）。
+    /// 削除の前のデータは templates.before-delete-日時.json として残し、［全件置換で復元］で戻せる。
+    /// </summary>
+    private void DeleteCategoryWithTemplates(Category category, int count)
+    {
+        // 削除するカテゴリの中を編集中（新規・複製を含む）なら、先に保存・破棄・キャンセルを選ぶ。
+        if (!ConfirmLeaveEditor()) return;
+        var first = string.Format(Strings.ConfirmDeleteCategoryWithTemplatesFormat, category.Name, count.ToString("N0"));
+        var pinned = _host.Fixed.Template is { } f && f.CategoryId == category.Id;
+        if (pinned) first += "\n\n" + Strings.ConfirmDeleteCategoryPinned;
+        if (!Confirm(first)) return;
+        if (!Confirm(string.Format(Strings.ConfirmDeleteCategoryFinalFormat, category.Name), MessageBoxImage.Warning)) return;
+        var error = _host.DeleteCategoryWithTemplates(category.Id);
+        if (error.Length > 0)
+        {
+            ShowError(error);
+            Refresh(selectCategory: category.Id);
+            return;
+        }
+        if (_editing is { } editing && editing.CategoryId == category.Id) LoadEditor(null, isNew: false);
+        else if (_editingNew) LoadEditor(null, isNew: false);
+        Refresh();
+    }
+
     private void OnMoveUp(object sender, RoutedEventArgs e) => Move(-1);
 
     private void OnMoveDown(object sender, RoutedEventArgs e) => Move(1);
 
     private void Move(int offset)
     {
+        if (Query.Length > 0) return;
         switch (SelectedRow)
         {
             case CategoryRow c:
@@ -365,6 +411,47 @@ public partial class TemplateEditor : UserControl
         _restoringSelection = false;
         LoadEditor(null, isNew: true, category.Id);
         NameBox.Focus();
+    }
+
+    /// <summary>
+    /// 選んだテンプレートの複製を始める。保存済みの最新の内容（ID で引き直したもの）から、名前・本文・カテゴリを引き継いだ新規編集にする。
+    /// 元のテンプレートと固定は変えない。［保存］で新しい ID で追加し、［元に戻す］・破棄では何も追加しない。
+    /// </summary>
+    private void OnDuplicate(object sender, RoutedEventArgs e)
+    {
+        if (SelectedTemplate is not { } selected || _host.TemplatesBlocked) return;
+        var id = selected.Id;
+        // 元の項目に未保存の編集があれば、保存・破棄・キャンセルを選ぶ（保存に失敗したら中止）。
+        if (!ConfirmLeaveEditor()) return;
+        if (_host.Library.FindTemplate(id) is not { } source)
+        {
+            ShowError(Strings.ErrorTemplateNotFound);
+            return;
+        }
+        _restoringSelection = true;
+        try
+        {
+            List.SelectedItem = ((IEnumerable<TreeRow>)List.ItemsSource).FirstOrDefault(r => r is CategoryRow c && c.CategoryId == source.CategoryId);
+        }
+        finally
+        {
+            _restoringSelection = false;
+        }
+        LoadEditor(null, isNew: true, source.CategoryId);
+        _loadingEditor = true;
+        try
+        {
+            NameBox.Text = _host.Library.SuggestCopyName(source.CategoryId, source.Name);
+            BodyBox.Text = source.Body;
+        }
+        finally
+        {
+            _loadingEditor = false;
+        }
+        UpdateEditorInfo();
+        UpdateButtons();
+        NameBox.Focus();
+        NameBox.SelectAll();
     }
 
     private void DeleteTemplate(Template template)
@@ -404,10 +491,10 @@ public partial class TemplateEditor : UserControl
         else if (_host.SettingsBlocked) _host.OfferSettingsReset(owner);
     }
 
-    private bool Confirm(string message) =>
+    private bool Confirm(string message, MessageBoxImage image = MessageBoxImage.Question) =>
         (Owner is { } owner
-            ? MessageBox.Show(owner, message, "ClipCompose", MessageBoxButton.OKCancel, MessageBoxImage.Question, MessageBoxResult.Cancel)
-            : MessageBox.Show(message, "ClipCompose", MessageBoxButton.OKCancel, MessageBoxImage.Question, MessageBoxResult.Cancel)) == MessageBoxResult.OK;
+            ? MessageBox.Show(owner, message, "ClipCompose", MessageBoxButton.OKCancel, image, MessageBoxResult.Cancel)
+            : MessageBox.Show(message, "ClipCompose", MessageBoxButton.OKCancel, image, MessageBoxResult.Cancel)) == MessageBoxResult.OK;
 
     private void ShowError(string message)
     {

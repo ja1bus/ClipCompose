@@ -50,6 +50,12 @@ Fonts are not bundled. The app uses fonts installed in Windows (Yu Gothic UI, Se
 
 フォントは同梱していません。Windows にインストールされているフォント（Yu Gothic UI・Segoe UI・Segoe Fluent Icons / Segoe MDL2 Assets・Consolas）を使います。
 
+## Microsoft Store package only / Microsoft Store のパッケージのみ
+
+To start automatically at sign-in, the Microsoft Store package uses the Windows Runtime API through `Microsoft.Windows.SDK.NET.dll` and `WinRT.Runtime.dll`. These files come from the Microsoft.Windows.SDK.NET.Ref package (© Microsoft Corporation), which the .NET SDK adds when building for a Windows version, and are distributed under its license terms: https://aka.ms/WinSDKLicenseURL. They are not included in this repository.
+
+Microsoft Store のパッケージは、サインイン時の自動起動に Windows ランタイムの API を使うため、`Microsoft.Windows.SDK.NET.dll` と `WinRT.Runtime.dll` を含みます。これらは Windows の版を指定してビルドするときに .NET SDK が加える Microsoft.Windows.SDK.NET.Ref パッケージ（© Microsoft Corporation）のファイルで、そのライセンス条項（https://aka.ms/WinSDKLicenseURL ）に従って配布しています。このリポジトリには含まれていません。
+
 ## Tests only / テストのみ
 
 The following NuGet packages are referenced by `Tests/ClipCompose.Tests.csproj`. They are restored from nuget.org at build time, are not included in this repository, and are not part of the app.

@@ -103,18 +103,21 @@ public static class TemplateFileFormat
         var problems = new List<string>();
         var categories = new List<Category>();
         var categoryIds = new HashSet<Guid>();
+        // 名前の重複は、前後の空白を除いた名前を大文字・小文字を区別せずに比べる（TemplateRules.SameName と同じ。件数が多くても線形で済むよう集合で持つ）。
+        var categoryNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var (c, index) in data.Categories.Select((c, i) => (c, i + 1)).OrderBy(p => p.c.Order))
         {
             if (c.Id == Guid.Empty || !categoryIds.Add(c.Id))
                 problems.Add(string.Format(Strings.ProblemCategoryFormat, index, Strings.ProblemDuplicateId));
             var error = TemplateRules.CheckName(c.Name, TemplateRules.CategoryNameMax, out var name);
-            if (error == LibraryError.None && categories.Any(x => TemplateRules.SameName(x.Name, name))) error = LibraryError.NameDuplicate;
+            if (error == LibraryError.None && !categoryNames.Add(name)) error = LibraryError.NameDuplicate;
             if (error != LibraryError.None) problems.Add(string.Format(Strings.ProblemCategoryFormat, index, TemplateRules.Describe(error, category: true)));
             categories.Add(new Category(c.Id, name));
         }
 
         var templates = new List<Template>();
         var templateIds = new HashSet<Guid>();
+        var templateNames = new Dictionary<Guid, HashSet<string>>();
         // カテゴリの表示順 → カテゴリ内の order の順（同じ order はファイル内の順）。
         var categoryRank = categories.Select((c, i) => (c.Id, i)).GroupBy(p => p.Id).ToDictionary(g => g.Key, g => g.First().i);
         var ordered = data.Templates.Select((t, i) => (t, index: i + 1))
@@ -127,17 +130,27 @@ public static class TemplateFileFormat
             if (!categoryIds.Contains(t.CategoryId))
                 problems.Add(string.Format(Strings.ProblemTemplateFormat, index, Strings.ProblemMissingCategory));
             var error = TemplateRules.CheckName(t.Name, TemplateRules.TemplateNameMax, out var name);
-            if (error == LibraryError.None && templates.Any(x => x.CategoryId == t.CategoryId && TemplateRules.SameName(x.Name, name)))
-                error = LibraryError.NameDuplicate;
+            if (error == LibraryError.None && !NamesIn(t.CategoryId).Add(name)) error = LibraryError.NameDuplicate;
             if (error == LibraryError.None) error = TemplateRules.CheckBody(t.Body);
             if (error != LibraryError.None) problems.Add(string.Format(Strings.ProblemTemplateFormat, index, TemplateRules.Describe(error)));
             templates.Add(new Template(t.Id, t.CategoryId, name, t.Body));
         }
 
         if (problems.Count == 0) return new(new TemplateLibrary(categories, templates), "");
+        return new(null, Describe(problems));
+
+        HashSet<string> NamesIn(Guid categoryId)
+        {
+            if (!templateNames.TryGetValue(categoryId, out var names)) templateNames[categoryId] = names = new(StringComparer.OrdinalIgnoreCase);
+            return names;
+        }
+    }
+
+    private static string Describe(List<string> problems)
+    {
         var listed = problems.Take(MaxListedProblems).ToList();
         if (problems.Count > MaxListedProblems) listed.Add(string.Format(Strings.ProblemMoreFormat, problems.Count - MaxListedProblems));
-        return new(null, string.Join(Environment.NewLine, listed));
+        return string.Join(Environment.NewLine, listed);
     }
 
     /// <summary>JSON の誤りの位置（内容の文字列は示さない）。</summary>

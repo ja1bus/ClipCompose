@@ -38,13 +38,25 @@ public sealed class AppSettings
     /// <summary>選択画面の本文パネルを開いておくか（前回の状態を次回も使う）。</summary>
     public bool PickerPreview { get; set; }
 
+    /// <summary>
+    /// 選択画面で閉じているカテゴリの ID（既定は空 = すべて開く）。1.1.0 で追加した任意の項目で、無い・null なら空として扱う。
+    /// 無くなったカテゴリの ID は表示では無視し、次に開閉を保存するときに除く。
+    /// </summary>
+    public List<Guid> CollapsedCategoryIds { get; set; } = [];
+
     [JsonIgnore]
     public Shortcut NormalShortcut => Shortcut.TryParse(NormalHotkey, out var s) ? s : Shortcut.None;
 
     [JsonIgnore]
     public Shortcut FixedShortcut => Shortcut.TryParse(FixedHotkey, out var s) ? s : Shortcut.None;
 
-    public AppSettings Clone() => (AppSettings)MemberwiseClone();
+    /// <summary>複製（リストも別のものにする。保存に成功するまで元の設定を変えないため）。</summary>
+    public AppSettings Clone()
+    {
+        var copy = (AppSettings)MemberwiseClone();
+        copy.CollapsedCategoryIds = [.. CollapsedCategoryIds ?? []];
+        return copy;
+    }
 }
 
 /// <summary>
@@ -67,6 +79,8 @@ public static class SettingsNormalizer
             fixes.Add("FixedHotkey: same as NormalHotkey, cleared");
         }
         if (s.FixedTemplateId == Guid.Empty) s.FixedTemplateId = null;
+        // 開閉状態は見た目だけなので、空の ID・重複は黙って除く（記録しない）。
+        s.CollapsedCategoryIds = [.. (s.CollapsedCategoryIds ?? []).Where(id => id != Guid.Empty).Distinct()];
         return fixes;
     }
 

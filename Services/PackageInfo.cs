@@ -18,7 +18,21 @@ public static class PackageInfo
     public static string? FamilyName { get; } = IsPackaged ? ReadFamilyName() : null;
 
     /// <summary>設定・テンプレート・ログの保存先（エクスプローラーで開ける実際の場所）。</summary>
-    public static string DataDirectory { get; } = SettingsStore.DataDirectory(FamilyName);
+    public static string DataDirectory { get; } = DebugDataDirectory() ?? SettingsStore.DataDirectory(FamilyName);
+
+    /// <summary>
+    /// Debug ビルドだけ: 環境変数 CLIPCOMPOSE_DATA_DIR で保存先を変える（試験で利用者のテンプレート・設定を上書きしないため）。
+    /// Release ビルド（配布物）では使わない。
+    /// </summary>
+    private static string? DebugDataDirectory()
+    {
+#if DEBUG
+        var directory = Environment.GetEnvironmentVariable("CLIPCOMPOSE_DATA_DIR");
+        return string.IsNullOrWhiteSpace(directory) ? null : System.IO.Path.GetFullPath(directory);
+#else
+        return null;
+#endif
+    }
 
     private static unsafe bool DetectPackaged()
     {

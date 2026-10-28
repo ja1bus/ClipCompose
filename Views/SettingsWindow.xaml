@@ -84,11 +84,24 @@
                                 <TextBlock Text="{x:Static l:Strings.SettingsLanguageNote}" Style="{StaticResource Note}" />
                             </StackPanel>
                         </GroupBox>
+                        <!-- サインイン時の自動起動（Store 版だけ）。状態の正本は Windows。画面を開いた・前面に戻したときに読み直す。 -->
+                        <GroupBox Header="{x:Static l:Strings.SettingsStartup}" Padding="8" Margin="0,10,0,0">
+                            <StackPanel>
+                                <CheckBox x:Name="StartupBox" Content="{x:Static l:Strings.SettingsStartupCheck}" Click="OnStartupClick" />
+                                <TextBlock x:Name="StartupStatus" Style="{StaticResource Note}" />
+                                <Button x:Name="StartupSettingsButton" Content="{x:Static l:Strings.SettingsStartupOpenWindows}" Style="{StaticResource DataButton}"
+                                        HorizontalAlignment="Left" Margin="0,6,0,0" Click="OnOpenStartupSettings" Visibility="Collapsed" />
+                            </StackPanel>
+                        </GroupBox>
                         <GroupBox Header="{x:Static l:Strings.SettingsData}" Padding="8" Margin="0,10,0,0">
                             <StackPanel>
+                                <!-- 1 段目は移行の操作、2 段目はデータの置き場所と復旧。 -->
                                 <WrapPanel>
-                                    <Button x:Name="ImportButton" Content="{x:Static l:Strings.ButtonImport}" Style="{StaticResource DataButton}" Click="OnImport" />
                                     <Button Content="{x:Static l:Strings.ButtonExport}" Style="{StaticResource DataButton}" Click="OnExport" />
+                                    <Button x:Name="ImportAppendButton" Content="{x:Static l:Strings.ButtonImportAppend}" Style="{StaticResource DataButton}" Click="OnImportAppend" />
+                                    <Button x:Name="ImportButton" Content="{x:Static l:Strings.ButtonImport}" Style="{StaticResource DataButton}" Click="OnImport" />
+                                </WrapPanel>
+                                <WrapPanel>
                                     <Button Content="{x:Static l:Strings.ButtonOpenFolder}" Style="{StaticResource DataButton}" Click="OnOpenFolder" />
                                     <Button x:Name="RecoveryButton" Content="{x:Static l:Strings.ButtonRecovery}" Style="{StaticResource DataButton}" Click="OnRecovery" />
                                 </WrapPanel>

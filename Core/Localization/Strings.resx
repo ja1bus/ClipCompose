@@ -67,6 +67,12 @@ Details were written to:
   <data name="ButtonDown" xml:space="preserve">
     <value>Down</value>
   </data>
+  <data name="ButtonDuplicate" xml:space="preserve">
+    <value>Duplicate</value>
+  </data>
+  <data name="ButtonDuplicateTip" xml:space="preserve">
+    <value>Start a new template with the same name, text, and category</value>
+  </data>
   <data name="ButtonExport" xml:space="preserve">
     <value>Export…</value>
   </data>
@@ -74,7 +80,10 @@ Details were written to:
     <value>How to use</value>
   </data>
   <data name="ButtonImport" xml:space="preserve">
-    <value>Import (replace all)…</value>
+    <value>Restore (replace all)…</value>
+  </data>
+  <data name="ButtonImportAppend" xml:space="preserve">
+    <value>Import (add)…</value>
   </data>
   <data name="ButtonMoveTip" xml:space="preserve">
     <value>Moves the selected category, or the selected template within its category.</value>
@@ -121,14 +130,31 @@ Details were written to:
   <data name="CategoryNameRenamePrompt" xml:space="preserve">
     <value>Category name</value>
   </data>
+  <data name="ConfirmDeleteCategoryFinalFormat" xml:space="preserve">
+    <value>Really delete "{0}"? This cannot be undone with Revert.
+
+The data before deletion is kept in the data folder as templates.before-delete-(date and time).json. To restore it, choose that file with Restore (replace all) on the General tab.</value>
+  </data>
   <data name="ConfirmDeleteCategoryFormat" xml:space="preserve">
     <value>Delete the category "{0}"?</value>
+  </data>
+  <data name="ConfirmDeleteCategoryPinned" xml:space="preserve">
+    <value>It contains the pinned template, which will be unpinned.</value>
+  </data>
+  <data name="ConfirmDeleteCategoryWithTemplatesFormat" xml:space="preserve">
+    <value>Delete the category "{0}" and its {1} templates?</value>
   </data>
   <data name="ConfirmDeleteTemplateFormat" xml:space="preserve">
     <value>Delete the template "{0}"?</value>
   </data>
   <data name="ConfirmDeleteTemplatePinned" xml:space="preserve">
     <value>This template is pinned. Deleting it also unpins it. No other template is pinned automatically.</value>
+  </data>
+  <data name="CopySuffix" xml:space="preserve">
+    <value> (copy)</value>
+  </data>
+  <data name="CopySuffixNumberedFormat" xml:space="preserve">
+    <value> (copy {0})</value>
   </data>
   <data name="EditorBody" xml:space="preserve">
     <value>Text</value>
@@ -190,9 +216,27 @@ Details were written to:
   <data name="ErrorTemplateNotFound" xml:space="preserve">
     <value>The template was not found.</value>
   </data>
+  <data name="ExportCountFormat" xml:space="preserve">
+    <value>{0} categories, {1} templates</value>
+  </data>
   <data name="ExportDoneFormat" xml:space="preserve">
     <value>Exported to:
 {0}</value>
+  </data>
+  <data name="ExportIntoDataFolder" xml:space="preserve">
+    <value>You cannot export into ClipCompose's data folder. Choose another folder.</value>
+  </data>
+  <data name="ExportNoCategories" xml:space="preserve">
+    <value>There are no categories to export.</value>
+  </data>
+  <data name="ExportSelectNote" xml:space="preserve">
+    <value>All templates in the selected categories are saved to one file. The saved contents are exported (unsaved edits are not included). Hotkeys and other settings on this PC are not included.</value>
+  </data>
+  <data name="ExportSelectOk" xml:space="preserve">
+    <value>Choose where to save…</value>
+  </data>
+  <data name="ExportSelectPrompt" xml:space="preserve">
+    <value>Choose the categories to export</value>
   </data>
   <data name="FailClipboardBusy" xml:space="preserve">
     <value>Another app is using the clipboard. Try again.</value>
@@ -222,6 +266,7 @@ ClipCompose starts in the notification area without opening a window. Create cat
 2. Run with the mouse (no hotkey needed)
 Click the tray icon, choose a template and press Enter (or double-click). The result is copied; paste it with Ctrl+V. You can also copy the pinned template from the tray menu.
 In the chooser, the pin button (Ctrl+P) pins or unpins a template, Text (Ctrl+Space) shows the template text, and Alt+↑↓ or dragging reorders templates (Alt+Shift+↑↓ or dragging a heading moves a category). Settings closes the chooser and opens Settings.
+Click a category heading (or press Enter or ←→ while the search box is empty) to collapse or expand it; ClipCompose remembers which categories are collapsed. The search box finds templates by template or category name (separate words with spaces to narrow the results).
 Windows may hide new tray icons under the ^ (Show hidden icons) button. To keep the icon visible, open Settings &gt; Personalization &gt; Taskbar &gt; Other system tray icons and turn on ClipCompose, or drag the icon onto the taskbar.
 
 3. Run with hotkeys (optional)
@@ -234,7 +279,10 @@ The clipboard is read when you confirm a template, not when you press the hotkey
 If the copied text was marked by its app as excluded from clipboard history or cloud sync (for example, by a password manager), ClipCompose applies the same marks to the result. Results of templates without {{clipboard}} are ordinary copies and may appear in Windows clipboard history or in other clipboard apps such as PlainClip. These marks are not a guarantee against every app.
 
 6. Data
-Templates and settings are saved only on this PC (the folder is shown on the General tab of Settings). Copied text and results are not saved. Use Export and Import to move templates to another PC (Import replaces all templates).</value>
+Templates and settings are saved only on this PC (the folder is shown on the General tab of Settings). Copied text and results are not saved. Use Export and Import to move templates to another PC. Export saves the categories you choose to one file. Import (add) adds the categories you choose from a file and keeps your current data; Restore (replace all) replaces all templates with the file.
+
+7. Start when you sign in
+In the Microsoft Store version, turn on "Start ClipCompose when I sign in to Windows" on the General tab of Settings. It is off by default. If it was turned off in Windows settings (Startup apps), turn it on there.</value>
   </data>
   <data name="GuideTitle" xml:space="preserve">
     <value>How to use ClipCompose</value>
@@ -260,16 +308,46 @@ Templates and settings are saved only on this PC (the folder is shown on the Gen
   <data name="HotkeyUnassigned" xml:space="preserve">
     <value>Not set</value>
   </data>
+  <data name="ImportAppendDoneFormat" xml:space="preserve">
+    <value>Imported. Added categories: {0}, replaced categories: {1}, templates: {2}.</value>
+  </data>
   <data name="ImportConfirmFormat" xml:space="preserve">
     <value>Replace all templates with the contents of this file?
 
 Current: {0} categories, {1} templates
 Imported: {2} categories, {3} templates
 
-The current data is backed up in the data folder before it is replaced. The pinned template is unpinned. Hotkeys and other settings on this PC are kept.</value>
+Current categories that are not in the file are also deleted. The current data is backed up in the data folder before it is replaced. The pinned template is unpinned. Hotkeys and other settings on this PC are kept.</value>
   </data>
   <data name="ImportDoneFormat" xml:space="preserve">
     <value>Imported {0} categories and {1} templates.</value>
+  </data>
+  <data name="ImportNoCategories" xml:space="preserve">
+    <value>This file has no categories to import.</value>
+  </data>
+  <data name="ImportResultAddFormat" xml:space="preserve">
+    <value>Added as "{0}"</value>
+  </data>
+  <data name="ImportResultRenamedFormat" xml:space="preserve">
+    <value>Same name exists: added as "{0}"</value>
+  </data>
+  <data name="ImportResultReplaceFormat" xml:space="preserve">
+    <value>Replaces the contents of "{0}"</value>
+  </data>
+  <data name="ImportSelectNote" xml:space="preserve">
+    <value>Your current categories and templates are kept. If a category with the same name exists, choose whether to add it as a new category or replace its contents with the file (templates with the same name stay pinned). The current data is backed up in the data folder first.</value>
+  </data>
+  <data name="ImportSelectOk" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="ImportSelectPrompt" xml:space="preserve">
+    <value>Choose the categories to import</value>
+  </data>
+  <data name="ImportSuffix" xml:space="preserve">
+    <value> (imported)</value>
+  </data>
+  <data name="ImportSuffixNumberedFormat" xml:space="preserve">
+    <value> (imported {0})</value>
   </data>
   <data name="ImportUnpinFailedFormat" xml:space="preserve">
     <value>Nothing was imported because the pinned template could not be unpinned first.
@@ -325,11 +403,20 @@ The current data is backed up in the data folder before it is replaced. The pinn
   <data name="PickerAutoPasteTip" xml:space="preserve">
     <value>Copies the result and pastes it into the previous window. The clipboard is read when you confirm a template, not when the hotkey was pressed.</value>
   </data>
+  <data name="PickerCollapseAll" xml:space="preserve">
+    <value>Collapse all</value>
+  </data>
+  <data name="PickerCollapseNotSaved" xml:space="preserve">
+    <value>Which categories are collapsed could not be saved. It is kept until ClipCompose exits.</value>
+  </data>
   <data name="PickerCopyOnly" xml:space="preserve">
     <value>Copy only</value>
   </data>
   <data name="PickerCopyOnlyTip" xml:space="preserve">
     <value>Copies the result. Paste it with Ctrl+V. The clipboard is read when you confirm a template, not when this window opened.</value>
+  </data>
+  <data name="PickerExpandAll" xml:space="preserve">
+    <value>Expand all</value>
   </data>
   <data name="PickerFixedHotkeyFormat" xml:space="preserve">
     <value>Pinned: {0}</value>
@@ -338,7 +425,7 @@ The current data is backed up in the data folder before it is replaced. The pinn
     <value>Enter: run   Ctrl+P: pin   Alt+↑↓: reorder</value>
   </data>
   <data name="PickerHintTip" xml:space="preserve">
-    <value>Alt+Shift+↑↓ moves the category. You can also drag templates and category headings. Ctrl+Space shows the template text.</value>
+    <value>Click a category heading, or press Enter or ←→ (when the search box is empty), to collapse or expand it. Alt+Shift+↑↓ moves the category. You can also drag templates and category headings. PageUp/PageDown moves 10 rows. Ctrl+Space shows the template text.</value>
   </data>
   <data name="PickerNoMatch" xml:space="preserve">
     <value>No matching templates</value>
@@ -353,7 +440,7 @@ The current data is backed up in the data folder before it is replaced. The pinn
     <value>Show or hide the template text (Ctrl+Space)</value>
   </data>
   <data name="PickerSearch" xml:space="preserve">
-    <value>Search by name</value>
+    <value>Search templates and categories</value>
   </data>
   <data name="PickerSettings" xml:space="preserve">
     <value>Settings</value>
@@ -443,6 +530,15 @@ If you choose No, the new language is used the next time ClipCompose starts.</va
   <data name="RowCategoryFormat" xml:space="preserve">
     <value>Category: {0}</value>
   </data>
+  <data name="RowCollapsed" xml:space="preserve">
+    <value>collapsed</value>
+  </data>
+  <data name="RowCountFormat" xml:space="preserve">
+    <value>{0} templates</value>
+  </data>
+  <data name="RowExpanded" xml:space="preserve">
+    <value>expanded</value>
+  </data>
   <data name="RowPinTip" xml:space="preserve">
     <value>Pin: run it with the pinned mode hotkey (Ctrl+P)</value>
   </data>
@@ -461,6 +557,39 @@ Choose a recovery option first.</value>
 
 {1}</value>
   </data>
+  <data name="SelectAllVisible" xml:space="preserve">
+    <value>Select shown</value>
+  </data>
+  <data name="SelectChecked" xml:space="preserve">
+    <value>selected</value>
+  </data>
+  <data name="SelectHiddenFormat" xml:space="preserve">
+    <value>(including {0} hidden by the search)</value>
+  </data>
+  <data name="SelectModeAdd" xml:space="preserve">
+    <value>Add as a new category</value>
+  </data>
+  <data name="SelectModeLabel" xml:space="preserve">
+    <value>How to import</value>
+  </data>
+  <data name="SelectModeReplace" xml:space="preserve">
+    <value>Replace its contents</value>
+  </data>
+  <data name="SelectNoMatch" xml:space="preserve">
+    <value>No matching categories</value>
+  </data>
+  <data name="SelectNoneVisible" xml:space="preserve">
+    <value>Clear shown</value>
+  </data>
+  <data name="SelectSearch" xml:space="preserve">
+    <value>Search category names</value>
+  </data>
+  <data name="SelectSummaryFormat" xml:space="preserve">
+    <value>Selected: {0} categories, {1} templates</value>
+  </data>
+  <data name="SelectUnchecked" xml:space="preserve">
+    <value>not selected</value>
+  </data>
   <data name="SettingsAppliedNote" xml:space="preserve">
     <value>Changes on this tab take effect immediately. A hotkey is registered when you leave its box.</value>
   </data>
@@ -477,7 +606,7 @@ Choose a recovery option first.</value>
     <value>Data folder: {0}</value>
   </data>
   <data name="SettingsDataNote" xml:space="preserve">
-    <value>Use Export and Import to move templates to another PC. Hotkeys and other settings on this PC are not included.</value>
+    <value>Export saves the categories you choose to one file. Import (add) adds categories from a file and keeps your current data. Restore (replace all) replaces all templates with the file. Hotkeys and other settings on this PC are not included.</value>
   </data>
   <data name="SettingsDuplicateHotkey" xml:space="preserve">
     <value>The normal mode and pinned mode hotkeys must be different.</value>
@@ -521,6 +650,15 @@ Move the file aside (it is kept with "corrupt" in its name) and start with defau
   <data name="SettingsNormalHotkey" xml:space="preserve">
     <value>Normal mode (choose a template):</value>
   </data>
+  <data name="SettingsStartup" xml:space="preserve">
+    <value>Startup</value>
+  </data>
+  <data name="SettingsStartupCheck" xml:space="preserve">
+    <value>Start ClipCompose when I sign in to Windows</value>
+  </data>
+  <data name="SettingsStartupOpenWindows" xml:space="preserve">
+    <value>Open Startup apps in Windows settings</value>
+  </data>
   <data name="SettingsTitle" xml:space="preserve">
     <value>ClipCompose Settings</value>
   </data>
@@ -538,6 +676,27 @@ Move the file aside (it is kept with "corrupt" in its name) and start with defau
   </data>
   <data name="ShortcutRequiresModifier" xml:space="preserve">
     <value>Combine the key with Ctrl, Alt or Win (Shift alone is not enough).</value>
+  </data>
+  <data name="StartupChangeFailed" xml:space="preserve">
+    <value>The startup setting could not be changed.</value>
+  </data>
+  <data name="StartupDisabledByPolicy" xml:space="preserve">
+    <value>Turned off by your organization's policy. It cannot be changed here.</value>
+  </data>
+  <data name="StartupDisabledByUser" xml:space="preserve">
+    <value>Turned off in Windows settings (Startup apps). To use it, turn it on there.</value>
+  </data>
+  <data name="StartupEnabled" xml:space="preserve">
+    <value>ClipCompose starts when you sign in to Windows.</value>
+  </data>
+  <data name="StartupEnabledByPolicy" xml:space="preserve">
+    <value>Turned on by your organization's policy. It cannot be changed here.</value>
+  </data>
+  <data name="StartupUnknown" xml:space="preserve">
+    <value>The startup setting could not be read. Check Startup apps in Windows settings.</value>
+  </data>
+  <data name="StartupUnsupported" xml:space="preserve">
+    <value>Available in the Microsoft Store version (not in this copy).</value>
   </data>
   <data name="StatusSaveBlocked" xml:space="preserve">
     <value>Saving is stopped because the template file could not be read.</value>
