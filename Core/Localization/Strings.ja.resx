@@ -86,7 +86,7 @@
     <value>追加インポート…</value>
   </data>
   <data name="ButtonMoveTip" xml:space="preserve">
-    <value>カテゴリの見出しを選んでいればカテゴリを、テンプレートを選んでいればカテゴリ内でテンプレートを動かします。</value>
+    <value>選んでいるカテゴリまたはテンプレートを動かします。</value>
   </data>
   <data name="ButtonNewTemplate" xml:space="preserve">
     <value>テンプレートを追加</value>
@@ -101,7 +101,7 @@
     <value>固定する</value>
   </data>
   <data name="ButtonPinTip" xml:space="preserve">
-    <value>固定モードのホットキーやトレイのメニューから、このテンプレートを実行します。</value>
+    <value>固定モードのショートカットやタスクトレイのメニューから、このテンプレートを実行します。</value>
   </data>
   <data name="ButtonRecovery" xml:space="preserve">
     <value>復旧方法…</value>
@@ -131,9 +131,9 @@
     <value>カテゴリの名前</value>
   </data>
   <data name="ConfirmDeleteCategoryFinalFormat" xml:space="preserve">
-    <value>本当に「{0}」を削除しますか？この操作は［元に戻す］では戻せません。
+    <value>本当に「{0}」を削除しますか？［元に戻す］では戻せません。
 
-削除する前のデータは、データのフォルダーに templates.before-delete-（日時）.json として残ります。戻すときは、［全般］タブの［全件置換で復元］でこのファイルを選んでください。</value>
+削除前のデータは、データのフォルダーに templates.before-delete-（日時）.json として残ります。戻し方は取扱説明書をご覧ください。</value>
   </data>
   <data name="ConfirmDeleteCategoryFormat" xml:space="preserve">
     <value>カテゴリ「{0}」を削除しますか？</value>
@@ -181,7 +181,7 @@
     <value>未保存の変更があります</value>
   </data>
   <data name="EditorVariableHint" xml:space="preserve">
-    <value>{{clipboard}} は実行時にクリップボードの文章に置き換わります。無い場合は本文をそのままコピーします。</value>
+    <value>{{clipboard}} は、実行時にクリップボードの文章に置き換わります。無い場合は、本文をそのままコピーします。</value>
   </data>
   <data name="ErrorBodyEmpty" xml:space="preserve">
     <value>本文を入力してください。</value>
@@ -230,7 +230,7 @@
     <value>エクスポートするカテゴリがありません。</value>
   </data>
   <data name="ExportSelectNote" xml:space="preserve">
-    <value>選んだカテゴリのテンプレートをすべて、1 つのファイルに保存します。保存済みの内容を出力します（未保存の編集は含みません）。ホットキーなど、この PC の設定は含みません。</value>
+    <value>選んだカテゴリを 1 つのファイルに保存します。未保存の編集と、この PC の設定は含みません。</value>
   </data>
   <data name="ExportSelectOk" xml:space="preserve">
     <value>保存先を選ぶ…</value>
@@ -251,38 +251,28 @@
     <value>ClipCompose のテンプレート (*.json)|*.json</value>
   </data>
   <data name="FirstRunNote" xml:space="preserve">
-    <value>ClipCompose は通知領域に常駐します。ホットキーはまだ設定されていません。
+    <value>ClipCompose はタスクトレイに常駐します。
 
-このままでも、トレイアイコンをクリックしてテンプレートを選び、Ctrl+V で貼り付けられます。下でホットキーを設定すると、どのアプリからでも選択画面を呼び出し、自動で貼り付けられます。
-
-テンプレートは［テンプレート］タブで作成します。</value>
+アイコンをクリックするとテンプレートを選べます。下でショートカットを設定すると、どのアプリからでも選択画面を呼び出せます。テンプレートは［テンプレート］タブで作成します。</value>
   </data>
   <data name="GuideText" xml:space="preserve">
-    <value>ClipCompose は、保存したテンプレートを、必要に応じてクリップボードの文章を差し込んでコピーします。
+    <value>ClipCompose は、保存したテンプレートに、必要ならクリップボードの文章を差し込んでコピーします。
 
-1. テンプレート
-ClipCompose は起動すると画面を出さずに通知領域に常駐します。カテゴリとテンプレートは設定画面の［テンプレート］タブ（トレイアイコンを右クリック＞［設定…］）で作成します。コピーした文章を入れたい位置に {{clipboard}} を書きます。{{clipboard}} が無いテンプレートは本文をそのままコピーし、クリップボードを読みません。
+1. テンプレートを作る
+タスクトレイのアイコンを右クリック＞［設定…］の［テンプレート］タブで作成します。コピーした文章を入れたい位置に {{clipboard}} を書きます。
 
-2. マウスで使う（ホットキー不要）
-トレイアイコンをクリックし、テンプレートを選んで Enter（またはダブルクリック）。結果がコピーされるので、貼り付け先で Ctrl+V します。トレイのメニューから固定テンプレートをコピーすることもできます。
-選択画面では、ピンのボタン（Ctrl+P）で固定・解除、［内容］（Ctrl+Space）で本文の表示、Alt+↑↓ またはドラッグでテンプレートの並べ替え（Alt+Shift+↑↓ または見出しのドラッグでカテゴリの並べ替え）ができます。［設定］で選択画面を閉じて設定画面を開きます。
-カテゴリの見出しをクリック（または検索欄が空のときに Enter・←→）すると、カテゴリを開閉できます。開閉の状態は次回も使います。検索欄では、テンプレート名とカテゴリ名で探せます（空白で区切ると、すべての語を含むものに絞ります）。
-新しいトレイアイコンは、Windows が［^］（隠れているインジケーターを表示）の中に入れることがあります。常に表示するには、［設定］＞［個人用設定］＞［タスク バー］＞［その他のシステム トレイ アイコン］で ClipCompose をオンにするか、アイコンをタスクバーへドラッグします。
+2. マウスで使う
+タスクトレイのアイコンをクリックし、テンプレートを選んで Enter（またはダブルクリック）。結果がコピーされるので、貼り付け先で Ctrl+V します。
 
-3. ホットキーで使う（任意）
-ホットキーは既定では未設定です。設定画面で、通常モード（選択画面を開く）と固定モード（選択画面なしで固定テンプレートを実行）のキーを設定できます。ホットキーから実行すると、使っていたウィンドウへ自動で貼り付けることもできます。自動貼り付けは通常モードでは既定で OFF、固定モードでは ON です。すべてのアプリで使えるとは限りません。貼り付けられない場合は Ctrl+V してください。
+3. ショートカットで使う（任意）
+設定画面の［ショートカットと動作］タブでキーを設定すると、どのアプリからでも呼び出せます。使っていたウィンドウへ自動で貼り付けることもできます。
 
-4. クリップボードを読む時点
-クリップボードは、ホットキーを押した時点ではなく、テンプレートを確定した時点の内容を使います。クリップボードに ClipCompose の前回の結果が残っている場合は、対象の文章をコピーし直すよう案内します。
+4. 知っておくこと
+・クリップボードは、テンプレートを確定した時点の内容を使います。
+・テンプレートと設定はこの PC の中だけに保存します。コピーした文章や結果は保存しません。
+・アイコンが見えないときは、タスクバーの［^］の中を確認してください。
 
-5. クリップボードの履歴と保護
-コピー元のアプリ（パスワード管理ソフトなど）が「履歴に含めない」「クラウドに同期しない」と指定した文章を差し込んだ場合、結果にも同じ指定を付けます。{{clipboard}} の無いテンプレートの結果は通常のコピーと同じで、Windows のクリップボードの履歴や PlainClip などのアプリの履歴に残ることがあります。これらの指定はすべてのアプリに対する保護を保証するものではありません。
-
-6. データ
-テンプレートと設定はこの PC の中だけに保存します（保存先は設定画面の［全般］タブに表示されます）。コピーした文章や結果は保存しません。別の PC への移行にはエクスポートとインポートを使います。エクスポートは選んだカテゴリを 1 つのファイルに保存します。［追加インポート］はファイルから選んだカテゴリを今のデータに追加し、［全件置換で復元］はすべてのテンプレートをファイルの内容に置き換えます。
-
-7. サインイン時に起動する
-Microsoft Store 版では、設定画面の［全般］タブで［Windows へのサインイン時に起動する］をオンにできます。既定はオフです。Windows の設定（スタートアップ アプリ）でオフにした場合は、Windows の設定でオンにしてください。</value>
+詳しい使い方は、設定画面の［バージョン情報］タブの「取扱説明書（Web）」を参照してください。</value>
   </data>
   <data name="GuideTitle" xml:space="preserve">
     <value>ClipCompose の使い方</value>
@@ -317,7 +307,7 @@ Microsoft Store 版では、設定画面の［全般］タブで［Windows へ�
 現在: カテゴリ {0} 件、テンプレート {1} 件
 インポート: カテゴリ {2} 件、テンプレート {3} 件
 
-ファイルに含まれない現在のカテゴリも削除されます。置き換える前に、現在のデータをデータのフォルダーへバックアップします。固定テンプレートは解除されます。ホットキーなどこの PC の設定は変わりません。</value>
+ファイルに含まれないカテゴリも削除されます。現在のデータは、バックアップしてから置き換えます。固定テンプレートは解除されます。</value>
   </data>
   <data name="ImportDoneFormat" xml:space="preserve">
     <value>カテゴリ {0} 件、テンプレート {1} 件をインポートしました。</value>
@@ -335,7 +325,7 @@ Microsoft Store 版では、設定画面の［全般］タブで［Windows へ�
     <value>既存の「{0}」の中身を置き換え</value>
   </data>
   <data name="ImportSelectNote" xml:space="preserve">
-    <value>現在のカテゴリとテンプレートはそのまま残ります。同じ名前のカテゴリがある場合は、別のカテゴリとして追加するか、中身をファイルの内容に置き換えるかを選べます（同じ名前のテンプレートの固定は保たれます）。取り込む前のデータは、データのフォルダーに残します。</value>
+    <value>現在のテンプレートは残ります（中身を置き換えたカテゴリを除く）。取り込む前のデータは、データのフォルダーに残します。</value>
   </data>
   <data name="ImportSelectOk" xml:space="preserve">
     <value>追加する</value>
@@ -401,7 +391,7 @@ Microsoft Store 版では、設定画面の［全般］タブで［Windows へ�
     <value>自動貼り付け</value>
   </data>
   <data name="PickerAutoPasteTip" xml:space="preserve">
-    <value>結果をコピーして、元のウィンドウへ貼り付けます。クリップボードは、ホットキーを押した時点ではなく、確定した時点の内容を使います。</value>
+    <value>結果をコピーして、元のウィンドウへ貼り付けます。</value>
   </data>
   <data name="PickerCollapseAll" xml:space="preserve">
     <value>すべて閉じる</value>
@@ -413,7 +403,7 @@ Microsoft Store 版では、設定画面の［全般］タブで［Windows へ�
     <value>コピーのみ</value>
   </data>
   <data name="PickerCopyOnlyTip" xml:space="preserve">
-    <value>結果をコピーします。Ctrl+V で貼り付けてください。クリップボードは、この画面を開いた時点ではなく、確定した時点の内容を使います。</value>
+    <value>結果をコピーします。Ctrl+V で貼り付けてください。</value>
   </data>
   <data name="PickerExpandAll" xml:space="preserve">
     <value>すべて開く</value>
@@ -425,7 +415,7 @@ Microsoft Store 版では、設定画面の［全般］タブで［Windows へ�
     <value>Enter: 実行　Ctrl+P: 固定　Alt+↑↓: 並べ替え</value>
   </data>
   <data name="PickerHintTip" xml:space="preserve">
-    <value>カテゴリの見出しのクリック、Enter、←→（検索欄が空のとき）でカテゴリを開閉します。Alt+Shift+↑↓ でカテゴリを動かします。テンプレートやカテゴリの見出しはドラッグでも動かせます。PageUp/PageDown で 10 行ずつ移動します。Ctrl+Space で本文を表示します。</value>
+    <value>←→（検索欄が空のとき）: カテゴリを開閉　Alt+Shift+↑↓: カテゴリを移動　Ctrl+Space: 本文を表示　ドラッグでも並べ替えできます</value>
   </data>
   <data name="PickerNoMatch" xml:space="preserve">
     <value>一致するテンプレートはありません</value>
@@ -585,13 +575,13 @@ Microsoft Store 版では、設定画面の［全般］タブで［Windows へ�
     <value>未選択</value>
   </data>
   <data name="SettingsAppliedNote" xml:space="preserve">
-    <value>このタブの変更はすぐに反映されます。ホットキーは入力欄から離れたときに登録します。</value>
+    <value>このタブの変更はすぐに反映されます。ショートカットは入力欄から離れたときに登録します。</value>
   </data>
   <data name="SettingsAutoPaste" xml:space="preserve">
     <value>自動貼り付け</value>
   </data>
   <data name="SettingsAutoPasteNote" xml:space="preserve">
-    <value>ホットキーを押したときのウィンドウへ Ctrl+V を送ります。すべてのアプリで使えるとは限りません（管理者として実行中のアプリなど）。その場合は Ctrl+V で貼り付けてください。トレイからの実行は常にコピーのみです。</value>
+    <value>ショートカットを押したときのウィンドウへ貼り付けます。貼り付けられないアプリでは Ctrl+V を押してください。タスクトレイからの実行は、常にコピーのみです。</value>
   </data>
   <data name="SettingsData" xml:space="preserve">
     <value>データ</value>
@@ -600,7 +590,7 @@ Microsoft Store 版では、設定画面の［全般］タブで［Windows へ�
     <value>保存先: {0}</value>
   </data>
   <data name="SettingsDataNote" xml:space="preserve">
-    <value>エクスポートは、選んだカテゴリを 1 つのファイルに保存します。［追加インポート］はファイルのカテゴリを今のデータに追加し、［全件置換で復元］はすべてのテンプレートをファイルの内容に置き換えます。ホットキーなど、この PC の設定は含みません。</value>
+    <value>エクスポート・インポートの対象はテンプレートだけです。ショートカットなど、この PC の設定は含みません。</value>
   </data>
   <data name="SettingsDuplicateHotkey" xml:space="preserve">
     <value>通常モードと固定モードには別のキーを設定してください。</value>
@@ -612,16 +602,16 @@ Microsoft Store 版では、設定画面の［全般］タブで［Windows へ�
     <value>固定モード（固定テンプレートを実行）:</value>
   </data>
   <data name="SettingsHotkeyFailedFormat" xml:space="preserve">
-    <value>ホットキーを登録できませんでした:
+    <value>ショートカットを登録できませんでした:
 {0}
 
-以前のホットキーのままです。別のキーの組み合わせを選んでください。</value>
+以前のショートカットのままです。別のキーの組み合わせを選んでください。</value>
   </data>
   <data name="SettingsHotkeyNote" xml:space="preserve">
-    <value>既定は未設定です。未設定でも、トレイアイコンのクリックでテンプレートを選んでコピーできます。Ctrl・Alt・Win のいずれかを含め、他のアプリが使うキーは避けてください（例: Ctrl+Alt+V は Office の「形式を選択して貼り付け」）。</value>
+    <value>未設定でも、タスクトレイのアイコンをクリックして使えます。Ctrl・Alt・Win のいずれかを含め、他のアプリが使うキーは避けてください。</value>
   </data>
   <data name="SettingsHotkeys" xml:space="preserve">
-    <value>ホットキー</value>
+    <value>ショートカット</value>
   </data>
   <data name="SettingsLanguage" xml:space="preserve">
     <value>言語 (Language)</value>
@@ -705,7 +695,7 @@ Microsoft Store 版では、設定画面の［全般］タブで［Windows へ�
     <value>全般</value>
   </data>
   <data name="TabHotkeys" xml:space="preserve">
-    <value>ホットキーと動作</value>
+    <value>ショートカットと動作</value>
   </data>
   <data name="TabTemplates" xml:space="preserve">
     <value>テンプレート</value>
@@ -777,7 +767,7 @@ Microsoft Store 版では、設定画面の［全般］タブで［Windows へ�
     <value>テンプレートのデータを読み込めません</value>
   </data>
   <data name="ToastStartedDetail" xml:space="preserve">
-    <value>トレイのアイコンのクリック、またはホットキーでテンプレートを選べます。</value>
+    <value>タスクトレイのアイコンのクリック、またはショートカットでテンプレートを選べます。</value>
   </data>
   <data name="ToastStartedTitle" xml:space="preserve">
     <value>ClipCompose を起動しました</value>
@@ -786,7 +776,7 @@ Microsoft Store 版では、設定画面の［全般］タブで［Windows へ�
     <value>終了</value>
   </data>
   <data name="TrayNotice" xml:space="preserve">
-    <value>通知領域に常駐しています。アイコンのクリックでテンプレートを選べます。右クリックでメニューを開きます（［終了］で終了）。</value>
+    <value>アイコンのクリックでテンプレートを選べます。右クリックのメニューから終了できます。</value>
   </data>
   <data name="TrayNoticeTitle" xml:space="preserve">
     <value>ClipCompose は動作中です</value>

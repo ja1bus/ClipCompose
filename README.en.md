@@ -11,8 +11,8 @@ This repository contains the source code of the publicly released ClipCompose.
 - Two levels of categories and templates: create, edit, duplicate, reorder and search them on the Templates tab of Settings
 - Write `{{clipboard}}` in a template, and it is replaced with the clipboard text when the template runs. A template without `{{clipboard}}` is copied as is, and the clipboard is not read
 - Chooser: pick from one list with category headings and press Enter. Collapse categories, search by template or category name, show the template text, pin a template, and reorder with keys or by dragging
-- Pinned template: pin one template and run it with the pinned mode hotkey without opening the chooser
-- Hotkeys (normal mode and pinned mode, not set by default) and optional automatic paste into the window you were using when you pressed the hotkey
+- Pinned template: pin one template and run it with the pinned mode shortcut without opening the chooser
+- Shortcuts (normal mode and pinned mode, not set by default) and optional automatic paste into the window you were using when you pressed the shortcut
 - If the source app marked the copied text as excluded from clipboard history (for example), the result gets the same marks
 - Export the categories you choose, import (add) categories you choose from a file, and restore by replacing all templates (JSON)
 - Start when you sign in to Windows (Microsoft Store version, off by default)
@@ -36,10 +36,10 @@ This GitHub repository does not distribute executables (binaries).
 
 ## Basic usage
 
-1. When started, ClipCompose stays in the notification area (no window is shown).
+1. When started, ClipCompose stays in the system tray. On first launch, Settings opens on the Shortcuts and behavior tab with a short guide. No window is shown on normal startup.
 2. Right-click the tray icon > Settings…, and on the Templates tab create categories and templates. Write `{{clipboard}}` where the copied text should go.
 3. Copy the text you want to insert, click the tray icon to open the chooser, select a template and press Enter. The result is copied; paste it with `Ctrl+V`.
-4. If you set hotkeys on the Hotkeys and behavior tab of Settings, you can open the chooser from any app and paste automatically.
+4. If you set shortcuts on the Shortcuts and behavior tab of Settings, you can open the chooser from any app and paste automatically.
 5. To quit, choose Exit from the tray menu.
 
 For details, see the user manual.
@@ -65,7 +65,7 @@ dotnet test Tests/ClipCompose.Tests.csproj
 dotnet run --project ClipCompose.csproj
 ```
 
-When started with `dotnet run`, the app stays in the notification area. To quit, choose Exit from the tray menu. Templates and settings are saved in `%LOCALAPPDATA%\ClipCompose\`.
+When started with `dotnet run`, the app stays in the system tray. To quit, choose Exit from the tray menu. Templates and settings are saved in `%LOCALAPPDATA%\ClipCompose\`.
 
 To create a framework-dependent build (win-x64), run the following. The output goes to `publish\FrameworkDependent\` and requires the .NET 10 Desktop Runtime (x64).
 
@@ -82,7 +82,7 @@ The output also contains `LICENSE` and `THIRD-PARTY-NOTICES.md` (shown from the 
 | `ClipCompose.csproj` | The app (WPF, `net10.0-windows`). Only the tray icon uses WinForms `NotifyIcon` |
 | `Core/` | Logic independent of the UI and Win32 (composition, template management, storage, settings) and the UI strings (English `Strings.resx`, Japanese `Strings.ja.resx`) |
 | `Tests/` | Unit tests for `Core` (xUnit) |
-| `Services/`, `Views/`, `Interop/` | Clipboard, hotkeys, paste and tray handling, windows, and Win32 API declarations |
+| `Services/`, `Views/`, `Interop/` | Clipboard, shortcuts, paste and tray handling, windows, and Win32 API declarations |
 | `icon.png`, `Resources/icon.ico` | App icon (`pwsh -File tools/make-icon.ps1` creates `icon.ico` from `icon.png`) |
 
 The tooling that builds the Microsoft Store package (MSIX) is not included in this repository. The `ClipComposeMsix` condition in `ClipCompose.csproj` and `Services/PackageInfo.cs` are for the Store version.

@@ -86,7 +86,7 @@ Details were written to:
     <value>Import (add)…</value>
   </data>
   <data name="ButtonMoveTip" xml:space="preserve">
-    <value>Moves the selected category, or the selected template within its category.</value>
+    <value>Moves the selected category or template.</value>
   </data>
   <data name="ButtonNewTemplate" xml:space="preserve">
     <value>Add template</value>
@@ -101,7 +101,7 @@ Details were written to:
     <value>Pin</value>
   </data>
   <data name="ButtonPinTip" xml:space="preserve">
-    <value>Run this template with the pinned mode hotkey or from the tray menu.</value>
+    <value>Run this template with the pinned mode shortcut or from the tray menu.</value>
   </data>
   <data name="ButtonRecovery" xml:space="preserve">
     <value>Recovery options…</value>
@@ -133,7 +133,7 @@ Details were written to:
   <data name="ConfirmDeleteCategoryFinalFormat" xml:space="preserve">
     <value>Really delete "{0}"? This cannot be undone with Revert.
 
-The data before deletion is kept in the data folder as templates.before-delete-(date and time).json. To restore it, choose that file with Restore (replace all) on the General tab.</value>
+The data before deletion is kept in the data folder as templates.before-delete-(date and time).json. See the user manual for how to restore it.</value>
   </data>
   <data name="ConfirmDeleteCategoryFormat" xml:space="preserve">
     <value>Delete the category "{0}"?</value>
@@ -230,7 +230,7 @@ The data before deletion is kept in the data folder as templates.before-delete-(
     <value>There are no categories to export.</value>
   </data>
   <data name="ExportSelectNote" xml:space="preserve">
-    <value>All templates in the selected categories are saved to one file. The saved contents are exported (unsaved edits are not included). Hotkeys and other settings on this PC are not included.</value>
+    <value>Saves the categories you choose to one file. Unsaved edits and settings on this PC are not included.</value>
   </data>
   <data name="ExportSelectOk" xml:space="preserve">
     <value>Choose where to save…</value>
@@ -251,38 +251,28 @@ The data before deletion is kept in the data folder as templates.before-delete-(
     <value>ClipCompose templates (*.json)|*.json</value>
   </data>
   <data name="FirstRunNote" xml:space="preserve">
-    <value>ClipCompose runs in the notification area. No hotkeys are set yet.
+    <value>ClipCompose runs in the system tray.
 
-You can already click the tray icon, choose a template and paste the result with Ctrl+V. If you set hotkeys below, you can open the chooser from any app and paste automatically.
-
-Create your templates on the Templates tab.</value>
+Click the icon to choose a template. Set shortcuts below to open the chooser from any app. Create your templates on the Templates tab.</value>
   </data>
   <data name="GuideText" xml:space="preserve">
     <value>ClipCompose copies saved templates, inserting the clipboard text where needed.
 
-1. Templates
-ClipCompose starts in the notification area without opening a window. Create categories and templates on the Templates tab of Settings (right-click the tray icon &gt; Settings…). Put {{clipboard}} in a template where the copied text should go. A template without {{clipboard}} is copied as is, and the clipboard is not read.
+1. Create templates
+Right-click the tray icon &gt; Settings… and use the Templates tab. Put {{clipboard}} where the copied text should go.
 
-2. Run with the mouse (no hotkey needed)
-Click the tray icon, choose a template and press Enter (or double-click). The result is copied; paste it with Ctrl+V. You can also copy the pinned template from the tray menu.
-In the chooser, the pin button (Ctrl+P) pins or unpins a template, Text (Ctrl+Space) shows the template text, and Alt+↑↓ or dragging reorders templates (Alt+Shift+↑↓ or dragging a heading moves a category). Settings closes the chooser and opens Settings.
-Click a category heading (or press Enter or ←→ while the search box is empty) to collapse or expand it; ClipCompose remembers which categories are collapsed. The search box finds templates by template or category name (separate words with spaces to narrow the results).
-Windows may hide new tray icons under the ^ (Show hidden icons) button. To keep the icon visible, open Settings &gt; Personalization &gt; Taskbar &gt; Other system tray icons and turn on ClipCompose, or drag the icon onto the taskbar.
+2. Use the mouse
+Click the tray icon, choose a template and press Enter (or double-click). The result is copied; paste it with Ctrl+V.
 
-3. Run with hotkeys (optional)
-Hotkeys are not set by default. In Settings, set a hotkey for normal mode (open the chooser) and for pinned mode (run the pinned template without the chooser). With hotkeys, ClipCompose can also paste automatically into the window you were using. Automatic paste is off by default in normal mode and on in pinned mode. It does not work in every app; if nothing is pasted, press Ctrl+V.
+3. Use shortcuts (optional)
+Set keys on the Shortcuts and behavior tab of Settings to open ClipCompose from any app. It can also paste automatically into the window you were using.
 
-4. When the clipboard is read
-The clipboard is read when you confirm a template, not when you press the hotkey. If the clipboard still holds ClipCompose's previous result, it asks you to copy the source text again.
+4. Good to know
+- The clipboard is read when you confirm a template.
+- Templates and settings are saved only on this PC. Copied text and results are not saved.
+- If you cannot see the icon, check under ^ on the taskbar.
 
-5. Clipboard history and protection
-If the copied text was marked by its app as excluded from clipboard history or cloud sync (for example, by a password manager), ClipCompose applies the same marks to the result. Results of templates without {{clipboard}} are ordinary copies and may appear in Windows clipboard history or in other clipboard apps such as PlainClip. These marks are not a guarantee against every app.
-
-6. Data
-Templates and settings are saved only on this PC (the folder is shown on the General tab of Settings). Copied text and results are not saved. Use Export and Import to move templates to another PC. Export saves the categories you choose to one file. Import (add) adds the categories you choose from a file and keeps your current data; Restore (replace all) replaces all templates with the file.
-
-7. Start when you sign in
-In the Microsoft Store version, turn on "Start ClipCompose when I sign in to Windows" on the General tab of Settings. It is off by default. If it was turned off in Windows settings (Startup apps), turn it on there.</value>
+For details, open "User manual (web)" on the About tab of Settings.</value>
   </data>
   <data name="GuideTitle" xml:space="preserve">
     <value>How to use ClipCompose</value>
@@ -303,7 +293,7 @@ In the Microsoft Store version, turn on "Start ClipCompose when I sign in to Win
     <value>✓ Registered</value>
   </data>
   <data name="HotkeySuspended" xml:space="preserve">
-    <value>Paused while entering a hotkey</value>
+    <value>Paused while entering a shortcut</value>
   </data>
   <data name="HotkeyUnassigned" xml:space="preserve">
     <value>Not set</value>
@@ -317,7 +307,7 @@ In the Microsoft Store version, turn on "Start ClipCompose when I sign in to Win
 Current: {0} categories, {1} templates
 Imported: {2} categories, {3} templates
 
-Current categories that are not in the file are also deleted. The current data is backed up in the data folder before it is replaced. The pinned template is unpinned. Hotkeys and other settings on this PC are kept.</value>
+Categories that are not in the file are also deleted. The current data is backed up before it is replaced. The pinned template is unpinned.</value>
   </data>
   <data name="ImportDoneFormat" xml:space="preserve">
     <value>Imported {0} categories and {1} templates.</value>
@@ -335,7 +325,7 @@ Current categories that are not in the file are also deleted. The current data i
     <value>Replaces the contents of "{0}"</value>
   </data>
   <data name="ImportSelectNote" xml:space="preserve">
-    <value>Your current categories and templates are kept. If a category with the same name exists, choose whether to add it as a new category or replace its contents with the file (templates with the same name stay pinned). The current data is backed up in the data folder first.</value>
+    <value>Your current templates are kept, except in categories whose contents you replace. The current data is kept in the data folder first.</value>
   </data>
   <data name="ImportSelectOk" xml:space="preserve">
     <value>Import</value>
@@ -389,7 +379,7 @@ Current categories that are not in the file are also deleted. The current data i
     <value>The original window could not be brought back to the front.</value>
   </data>
   <data name="PasteSkipKeys" xml:space="preserve">
-    <value>The hotkey keys were not released in time.</value>
+    <value>The shortcut keys were not released in time.</value>
   </data>
   <data name="PasteSkipSend" xml:space="preserve">
     <value>The paste keys could not be sent.</value>
@@ -401,7 +391,7 @@ Current categories that are not in the file are also deleted. The current data i
     <value>Auto paste</value>
   </data>
   <data name="PickerAutoPasteTip" xml:space="preserve">
-    <value>Copies the result and pastes it into the previous window. The clipboard is read when you confirm a template, not when the hotkey was pressed.</value>
+    <value>Copies the result and pastes it into the previous window.</value>
   </data>
   <data name="PickerCollapseAll" xml:space="preserve">
     <value>Collapse all</value>
@@ -413,7 +403,7 @@ Current categories that are not in the file are also deleted. The current data i
     <value>Copy only</value>
   </data>
   <data name="PickerCopyOnlyTip" xml:space="preserve">
-    <value>Copies the result. Paste it with Ctrl+V. The clipboard is read when you confirm a template, not when this window opened.</value>
+    <value>Copies the result. Paste it with Ctrl+V.</value>
   </data>
   <data name="PickerExpandAll" xml:space="preserve">
     <value>Expand all</value>
@@ -425,7 +415,7 @@ Current categories that are not in the file are also deleted. The current data i
     <value>Enter: run   Ctrl+P: pin   Alt+↑↓: reorder</value>
   </data>
   <data name="PickerHintTip" xml:space="preserve">
-    <value>Click a category heading, or press Enter or ←→ (when the search box is empty), to collapse or expand it. Alt+Shift+↑↓ moves the category. You can also drag templates and category headings. PageUp/PageDown moves 10 rows. Ctrl+Space shows the template text.</value>
+    <value>←→ (when the search box is empty): collapse or expand a category   Alt+Shift+↑↓: move a category   Ctrl+Space: show the text   You can also drag to reorder.</value>
   </data>
   <data name="PickerNoMatch" xml:space="preserve">
     <value>No matching templates</value>
@@ -585,13 +575,13 @@ Choose a recovery option first.</value>
     <value>not selected</value>
   </data>
   <data name="SettingsAppliedNote" xml:space="preserve">
-    <value>Changes on this tab take effect immediately. A hotkey is registered when you leave its box.</value>
+    <value>Changes on this tab take effect immediately. A shortcut is registered when you leave its box.</value>
   </data>
   <data name="SettingsAutoPaste" xml:space="preserve">
     <value>Automatic paste</value>
   </data>
   <data name="SettingsAutoPasteNote" xml:space="preserve">
-    <value>Sends Ctrl+V to the window that was active when you pressed the hotkey. It does not work in every app (for example, apps running as administrator); then paste with Ctrl+V. Running from the tray always copies only.</value>
+    <value>Pastes into the window that was active when you pressed the shortcut. If an app does not accept it, press Ctrl+V. Running from the tray always copies only.</value>
   </data>
   <data name="SettingsData" xml:space="preserve">
     <value>Data</value>
@@ -600,10 +590,10 @@ Choose a recovery option first.</value>
     <value>Data folder: {0}</value>
   </data>
   <data name="SettingsDataNote" xml:space="preserve">
-    <value>Export saves the categories you choose to one file. Import (add) adds categories from a file and keeps your current data. Restore (replace all) replaces all templates with the file. Hotkeys and other settings on this PC are not included.</value>
+    <value>Export and import include only templates, not shortcuts or other settings on this PC.</value>
   </data>
   <data name="SettingsDuplicateHotkey" xml:space="preserve">
-    <value>The normal mode and pinned mode hotkeys must be different.</value>
+    <value>The normal mode and pinned mode shortcuts must be different.</value>
   </data>
   <data name="SettingsFixedAutoPaste" xml:space="preserve">
     <value>Paste automatically in pinned mode</value>
@@ -612,16 +602,16 @@ Choose a recovery option first.</value>
     <value>Pinned mode (run the pinned template):</value>
   </data>
   <data name="SettingsHotkeyFailedFormat" xml:space="preserve">
-    <value>Could not register the hotkey:
+    <value>Could not register the shortcut:
 {0}
 
-The previous hotkeys are kept. Choose another key combination.</value>
+The previous shortcuts are kept. Choose another key combination.</value>
   </data>
   <data name="SettingsHotkeyNote" xml:space="preserve">
-    <value>Not set by default. Without hotkeys you can still click the tray icon to choose and copy a template. Include Ctrl, Alt or Win, and avoid keys that other apps use (for example, Ctrl+Alt+V is Paste Special in Office).</value>
+    <value>Without shortcuts, you can still click the tray icon to choose a template. Include Ctrl, Alt or Win, and avoid keys that other apps use.</value>
   </data>
   <data name="SettingsHotkeys" xml:space="preserve">
-    <value>Hotkeys</value>
+    <value>Shortcuts</value>
   </data>
   <data name="SettingsLanguage" xml:space="preserve">
     <value>Language</value>
@@ -705,7 +695,7 @@ Move the file aside (it is kept with "corrupt" in its name) and start with defau
     <value>General</value>
   </data>
   <data name="TabHotkeys" xml:space="preserve">
-    <value>Hotkeys and behavior</value>
+    <value>Shortcuts and behavior</value>
   </data>
   <data name="TabTemplates" xml:space="preserve">
     <value>Templates</value>
@@ -777,7 +767,7 @@ Move the file aside (it is kept with "corrupt" in its name) and start with defau
     <value>Template data could not be read</value>
   </data>
   <data name="ToastStartedDetail" xml:space="preserve">
-    <value>Click the tray icon or press the hotkey to choose a template.</value>
+    <value>Click the tray icon or press the shortcut to choose a template.</value>
   </data>
   <data name="ToastStartedTitle" xml:space="preserve">
     <value>ClipCompose is running</value>
@@ -786,7 +776,7 @@ Move the file aside (it is kept with "corrupt" in its name) and start with defau
     <value>Exit</value>
   </data>
   <data name="TrayNotice" xml:space="preserve">
-    <value>It stays in the notification area. Click the icon to choose a template, or right-click it for the menu (Exit quits).</value>
+    <value>Click the icon to choose a template. Right-click it for the menu, where you can exit.</value>
   </data>
   <data name="TrayNoticeTitle" xml:space="preserve">
     <value>ClipCompose is still running</value>
