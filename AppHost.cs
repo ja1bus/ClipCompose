@@ -49,7 +49,7 @@ public sealed class AppHost : IDisposable
         _windowsUiCulture = windowsUiCulture;
         _uiCulture = windowsUiCulture;
         var directory = PackageInfo.DataDirectory;
-        _templates = new TemplateStore(directory);
+        _templates = new TemplateStore(directory, log: (message, ex) => ErrorLog.Write(message, ex));
         _settingsStore = new SettingsStore(directory);
     }
 
@@ -68,7 +68,11 @@ public sealed class AppHost : IDisposable
 
     public HotkeyService Hotkeys { get; private set; } = null!;
 
-    public FixedTemplate Fixed => FixedTemplate.Resolve(_settings.FixedTemplateId, Library);
+    /// <summary>固定スロット 1〜3 の参照先（保存済みの最新のライブラリから引き直す）。</summary>
+    public IReadOnlyList<FixedTemplate> FixedAll => FixedTemplate.ResolveAll(_settings, Library);
+
+    /// <summary>テンプレートが入っている固定スロットの番号（無ければ null）。</summary>
+    public int? SlotOf(Guid templateId) => FixedSlotRules.SlotOf(_settings, templateId);
 
     public bool TemplatesBlocked => _templates.SaveBlocked;
 
@@ -103,11 +107,13 @@ public sealed class AppHost : IDisposable
         Hotkeys = new HotkeyService();
         Hotkeys.Pressed += OnHotkey;
         Hotkeys.StatusChanged += (_, _) => RefreshStatus();
-        Hotkeys.Apply(_settings.NormalShortcut, _settings.FixedShortcut);
+        Hotkeys.Apply(_settings.NormalShortcut, SlotShortcuts(_settings));
 
-        _tray = new TrayService(() => new TrayState(Fixed, Hotkeys.Normal, Hotkeys.Fixed));
+        _tray = new TrayService(() => new TrayState(
+            [.. FixedAll.Select(f => new TraySlot(f, Hotkeys.Fixed(f.Slot)))], Hotkeys.Normal));
         _tray.PickerRequested += (_, _) => OpenPicker(null);
-        _tray.RunFixedRequested += (_, _) => RunFixed(null);
+        // トレイからの実行はコピーのみ。通知は通知する時点のカーソルのあるモニターに出す（基準点 null）。
+        _tray.RunFixedRequested += (_, slot) => RunFixed(slot, null, null);
         _tray.SettingsRequested += (_, _) => ShowSettings();
         _tray.ExitRequested += (_, _) => Exit();
         _tray.UpdateTooltip();
@@ -116,7 +122,7 @@ public sealed class AppHost : IDisposable
         if (settingsLoad.Kind == LoadKind.Failed) OfferSettingsReset(ShowSettings(SettingsTab.General));
         if (templateLoad.Kind == LoadKind.Failed) OfferTemplateRecovery(ShowSettings(SettingsTab.Templates));
         if (settingsLoad.Kind == LoadKind.Missing) ShowFirstRunNotice();
-        else if (settingsLoad.Kind != LoadKind.Failed && templateLoad.Kind != LoadKind.Failed)
+        else if (settingsLoad.Kind != LoadKind.Failed && templateLoad.Kind != LoadKind.Failed && _settings.StartupNotice)
             ToastWindow.ShowInfo(Strings.ToastStartedTitle, Strings.ToastStartedDetail);
     }
 
@@ -262,6 +268,12 @@ public sealed class AppHost : IDisposable
         if (TemplatesBlocked) return string.Format(Strings.SaveBlockedFormat, _templates.FilePath);
         var result = edit(Library);
         if (!result.Succeeded) return TemplateRules.Describe(result.Error, category);
+        // 変更が無い（端での並べ替えなど）なら保存しない。
+        if (ReferenceEquals(result.Library, Library))
+        {
+            id = result.Id;
+            return "";
+        }
         var saved = _templates.Save(result.Library!);
         if (!saved.Succeeded)
         {
@@ -274,16 +286,39 @@ public sealed class AppHost : IDisposable
         return "";
     }
 
-    /// <summary>固定テンプレートを変える（null は解除）。失敗の理由（成功なら空文字）。</summary>
-    public string SetFixed(Guid? id)
+    /// <summary>
+    /// 固定スロット（1〜3）にテンプレートを入れる（null は解除）。別のスロットにあれば移る。失敗の理由（成功なら空文字）。
+    /// </summary>
+    public string SetFixed(int slot, Guid? id) => SaveSettings(FixedSlotRules.WithPin(_settings, slot, id));
+
+    /// <summary>テンプレートが入っているスロットを解除する（テンプレートの削除の後）。失敗の理由（成功・入っていなければ空文字）。</summary>
+    public string UnpinTemplate(Guid id)
     {
-        var updated = _settings.Clone();
-        updated.FixedTemplateId = id;
+        var (updated, changed) = FixedSlotRules.WithoutTemplates(_settings, new HashSet<Guid> { id });
+        return changed ? SaveSettings(updated) : "";
+    }
+
+    private string SaveSettings(AppSettings updated)
+    {
         var result = _settingsStore.Save(updated);
         if (!result.Succeeded) return result.Problem;
         _settings = updated;
         RefreshStatus();
         return "";
+    }
+
+    /// <summary>
+    /// 選択画面を閉じたときの左上（物理ピクセル。「前回の位置」のときだけ呼ばれる）を覚える。
+    /// 保存できなくても、この起動中は覚えておく（記録だけ残す）。
+    /// </summary>
+    public void SetPickerPosition(int x, int y)
+    {
+        if (_settings.PickerLeft == x && _settings.PickerTop == y) return;
+        var updated = _settings.Clone();
+        updated.PickerLeft = x;
+        updated.PickerTop = y;
+        if (!_settingsStore.Save(updated).Succeeded) ErrorLog.Write($"Could not save where the chooser was closed: {_settingsStore.FilePath}");
+        _settings = updated;
     }
 
     /// <summary>テンプレートをカテゴリ内で動かして保存する（選択画面・設定画面の並べ替え）。失敗の理由（成功なら空文字）。</summary>
@@ -298,7 +333,7 @@ public sealed class AppHost : IDisposable
         if (_settings.PickerPreview == visible) return;
         var updated = _settings.Clone();
         updated.PickerPreview = visible;
-        if (!_settingsStore.Save(updated).Succeeded) ErrorLog.Write("Could not save whether the preview pane is open");
+        if (!_settingsStore.Save(updated).Succeeded) ErrorLog.Write($"Could not save whether the preview pane is open: {_settingsStore.FilePath}");
         _settings = updated;
     }
 
@@ -315,7 +350,7 @@ public sealed class AppHost : IDisposable
         var result = _settingsStore.Save(updated);
         _settings = updated;
         if (result.Succeeded) return "";
-        ErrorLog.Write("Could not save which categories are collapsed");
+        ErrorLog.Write($"Could not save which categories are collapsed: {_settingsStore.FilePath}");
         return result.Problem;
     }
 
@@ -343,13 +378,14 @@ public sealed class AppHost : IDisposable
     public string ApplySettings(AppSettings updated)
     {
         var previous = _settings;
-        var hotkeysChanged = updated.NormalShortcut != previous.NormalShortcut || updated.FixedShortcut != previous.FixedShortcut;
-        if (hotkeysChanged && !Hotkeys.TryChange(updated.NormalShortcut, updated.FixedShortcut, out var failure))
+        var hotkeysChanged = updated.NormalShortcut != previous.NormalShortcut
+            || !SlotShortcuts(updated).SequenceEqual(SlotShortcuts(previous));
+        if (hotkeysChanged && !Hotkeys.TryChange(updated.NormalShortcut, SlotShortcuts(updated), out var failure))
             return string.Format(Strings.SettingsHotkeyFailedFormat, failure!.Describe());
         var result = _settingsStore.Save(updated);
         if (!result.Succeeded)
         {
-            if (hotkeysChanged) Hotkeys.Apply(previous.NormalShortcut, previous.FixedShortcut);
+            if (hotkeysChanged) Hotkeys.Apply(previous.NormalShortcut, SlotShortcuts(previous));
             return result.Problem;
         }
         _settings = updated;
@@ -357,21 +393,32 @@ public sealed class AppHost : IDisposable
         return "";
     }
 
+    private static IReadOnlyList<Shortcut> SlotShortcuts(AppSettings settings) => [.. settings.FixedSlots.Select(s => s.Shortcut)];
+
     // ---- 実行 ----
 
     private void OnHotkey(HotkeyMode mode, Shortcut shortcut)
     {
         if (_exiting) return;
         var target = PasteService.CaptureTarget(shortcut);
-        if (mode == HotkeyMode.Normal) OpenPicker(target, fromHotkey: true);
-        else RunFixed(_settings.FixedAutoPaste ? target : null);
+        // 通知は押した時点の前面のウィンドウ（貼り付け先）のモニターに出す。取れない・自分のウィンドウならカーソルのモニター。
+        var anchor = HotkeyAnchor();
+        if (HotkeyModes.SlotOf(mode) is not { } slot) OpenPicker(target, fromHotkey: true, anchor);
+        else RunFixed(slot, _settings.Slot(slot).AutoPaste ? target : null, anchor);
+    }
+
+    private static ScreenAnchor HotkeyAnchor()
+    {
+        var foreground = WindowHelper.RootOf(Interop.NativeMethods.GetForegroundWindow());
+        return foreground == IntPtr.Zero || WindowHelper.IsOwnWindow(foreground) ? ScreenAnchor.AtCursor() : ScreenAnchor.ForWindow(foreground);
     }
 
     /// <summary>
     /// 選択画面を開く。開いていれば再利用する（多重化しない）。実行中は開かない。
     /// </summary>
     /// <param name="target">ホットキー押下時の貼り付け先。null ならコピーのみ。</param>
-    private void OpenPicker(PasteTarget? target, bool fromHotkey = false)
+    /// <param name="anchor">通知を出すモニターの基準（ショートカットからのとき）。null なら通知を出す時点のカーソル位置。</param>
+    private void OpenPicker(PasteTarget? target, bool fromHotkey = false, ScreenAnchor? anchor = null)
     {
         if (_exiting || _runner is null) return;
         if (_picker is not null)
@@ -398,12 +445,22 @@ public sealed class AppHost : IDisposable
             if (Library.FindTemplate(chosen.Id) is not { } template)
             {
                 _runner.Cancel();
-                ToastWindow.ShowWarning(Strings.ErrorTemplateNotFound, "");
+                ToastWindow.ShowWarning(Strings.ErrorTemplateNotFound, "", NotifyAt(anchor));
                 return;
             }
-            // 選択画面を閉じたことで前面が ClipCompose 側に移った場合だけ、貼り付け先へ戻してよい。
-            PasteTarget? pasteTarget = autoPaste ? target!.Value with { TriggerKey = byEnter ? VK_RETURN : 0, RestoreFocus = true } : null;
-            Notify(await _runner.RunBegunAsync(template, pasteTarget));
+            try
+            {
+                // 選択画面を閉じたことで前面が ClipCompose 側に移った場合だけ、貼り付け先へ戻してよい。
+                PasteTarget? pasteTarget = autoPaste ? target!.Value with { TriggerKey = byEnter ? VK_RETURN : 0, RestoreFocus = true } : null;
+                var outcome = await _runner.RunBegunAsync(template, pasteTarget);
+                Notify(outcome, NotifyAt(anchor));
+            }
+            catch (Exception ex)
+            {
+                // 実行中の状態は RunBegunAsync の finally で戻る。
+                ErrorLog.Write("Running the chosen template failed", ex);
+                ToastWindow.ShowWarning(Strings.ToastFailedTitle, Strings.FailWrite, NotifyAt(anchor));
+            }
         };
         picker.Canceled += () =>
         {
@@ -415,56 +472,61 @@ public sealed class AppHost : IDisposable
         picker.Activate();
     }
 
-    /// <summary>固定テンプレートを選択画面なしで実行する。</summary>
-    private async void RunFixed(PasteTarget? target)
+    /// <summary>固定スロット（1〜3）のテンプレートを選択画面なしで実行する。</summary>
+    /// <param name="anchor">通知を出すモニターの基準（ショートカットからのとき）。null なら通知を出す時点のカーソル位置。</param>
+    private async void RunFixed(int slot, PasteTarget? target, ScreenAnchor? anchor)
     {
         if (_exiting || _runner is null) return;
-        var f = Fixed;
+        var f = FixedTemplate.Resolve(_settings, slot, Library);
         switch (f.State)
         {
             case FixedTemplateState.NotSet:
-                ToastWindow.ShowWarning(Strings.ToastFixedNotSetTitle, Strings.ToastFixedNotSetDetail);
+                ToastWindow.ShowWarning(string.Format(Strings.ToastFixedNotSetTitleFormat, slot), Strings.ToastFixedNotSetDetail, NotifyAt(anchor));
                 return;
             case FixedTemplateState.Missing:
-                ToastWindow.ShowWarning(Strings.ToastFixedMissingTitle, Strings.ToastFixedMissingDetail);
+                ToastWindow.ShowWarning(string.Format(Strings.ToastFixedMissingTitleFormat, slot), Strings.ToastFixedMissingDetail, NotifyAt(anchor));
                 return;
         }
         try
         {
-            Notify(await _runner.RunAsync(f.Template!, target));
+            var outcome = await _runner.RunAsync(f.Template!, target);
+            Notify(outcome, NotifyAt(anchor));
         }
         catch (Exception ex)
         {
             ErrorLog.Write("Running the pinned template failed", ex);
-            ToastWindow.ShowWarning(Strings.ToastFailedTitle, Strings.FailWrite);
+            ToastWindow.ShowWarning(Strings.ToastFailedTitle, Strings.FailWrite, NotifyAt(anchor));
         }
     }
 
-    /// <summary>実行結果の通知（フォーカスを奪わない）。「貼り付け完了」とは断定しない。</summary>
-    private static void Notify(RunOutcome outcome)
+    /// <summary>通知の基準点。ショートカットからは押した時点の基準、それ以外（null）は通知する時点のカーソル位置（仕様書 §17.6）。</summary>
+    private static ScreenAnchor NotifyAt(ScreenAnchor? anchor) => anchor ?? ScreenAnchor.AtCursor();
+
+    /// <summary>実行結果の通知（フォーカスを奪わない）。「貼り付け完了」とは断定しない。<paramref name="anchor"/> のモニターに出す。</summary>
+    private static void Notify(RunOutcome outcome, ScreenAnchor anchor)
     {
         switch (outcome.Status)
         {
             case RunStatus.Copied:
-                ToastWindow.ShowInfo(Strings.ToastCopiedTitle, Strings.ToastCopiedDetail);
+                ToastWindow.ShowInfo(Strings.ToastCopiedTitle, Strings.ToastCopiedDetail, anchor);
                 break;
             case RunStatus.PasteSent:
-                ToastWindow.ShowInfo(Strings.ToastPasteSentTitle, Strings.ToastPasteSentDetail);
+                ToastWindow.ShowInfo(Strings.ToastPasteSentTitle, Strings.ToastPasteSentDetail, anchor);
                 break;
             case RunStatus.CopiedPasteSkipped:
-                ToastWindow.ShowWarning(Strings.ToastPasteSkippedTitle, $"{PasteSkipText(outcome.PasteSkip)} {Strings.ToastCopiedDetail}");
+                ToastWindow.ShowWarning(Strings.ToastPasteSkippedTitle, $"{PasteSkipText(outcome.PasteSkip)} {Strings.ToastCopiedDetail}", anchor);
                 break;
             case RunStatus.ClipboardChangedAfterCopy:
-                ToastWindow.ShowWarning(Strings.ToastClipboardChangedTitle, Strings.ToastChangedAfterCopyDetail);
+                ToastWindow.ShowWarning(Strings.ToastClipboardChangedTitle, Strings.ToastChangedAfterCopyDetail, anchor);
                 break;
             case RunStatus.ClipboardChangedBeforeCopy:
-                ToastWindow.ShowWarning(Strings.ToastClipboardChangedTitle, Strings.ToastChangedBeforeCopyDetail);
+                ToastWindow.ShowWarning(Strings.ToastClipboardChangedTitle, Strings.ToastChangedBeforeCopyDetail, anchor);
                 break;
             case RunStatus.AlreadyComposed:
-                ToastWindow.ShowWarning(Strings.ToastAlreadyComposedTitle, Strings.ToastAlreadyComposedDetail);
+                ToastWindow.ShowWarning(Strings.ToastAlreadyComposedTitle, Strings.ToastAlreadyComposedDetail, anchor);
                 break;
             case RunStatus.InputRejected:
-                ToastWindow.ShowWarning(Strings.ToastInputRejectedTitle, ComposeErrorText(outcome.ComposeError));
+                ToastWindow.ShowWarning(Strings.ToastInputRejectedTitle, ComposeErrorText(outcome.ComposeError), anchor);
                 break;
             case RunStatus.Failed:
                 ToastWindow.ShowWarning(Strings.ToastFailedTitle, outcome.Failure switch
@@ -472,7 +534,7 @@ public sealed class AppHost : IDisposable
                     RunFailure.ClipboardBusy => Strings.FailClipboardBusy,
                     RunFailure.ProtectionUnavailable => Strings.FailProtection,
                     _ => Strings.FailWrite,
-                });
+                }, anchor);
                 break;
             case RunStatus.Busy:
                 break; // 実行中に重ねた要求は通知せずに捨てる
@@ -593,6 +655,42 @@ public sealed class AppHost : IDisposable
         _settingsWindow?.ReloadAfterReplace();
         RefreshStatus();
         ShowMessage(string.Format(Strings.ImportDoneFormat, imported.Categories.Count, imported.Templates.Count), MessageBoxImage.Information, owner);
+    }
+
+    /// <summary>
+    /// 以前の状態に戻す（仕様書 §11・§17.9）。退避ファイルの一覧から選び、全件置換と同じ確認・手順で置き換える
+    /// （固定は全スロット解除、現在のデータを before-restore として残してから保存）。未保存の確認は呼び出し側で済ませている。
+    /// </summary>
+    public void RestoreEarlier(Window owner)
+    {
+        if (TemplatesBlocked)
+        {
+            ShowMessage(string.Format(Strings.SaveBlockedFormat, _templates.FilePath), MessageBoxImage.Warning, owner);
+            return;
+        }
+        TemplateLibrary? restored = null;
+        RestoreWindow.Ask(owner, _templates.ListSideCopies(), _templates.ReadSideCopy, (dialog, copy, library) =>
+        {
+            var confirm = string.Format(Strings.RestoreConfirmFormat, Library.Categories.Count, Library.Templates.Count,
+                library.Categories.Count, library.Templates.Count, RestoreWindow.Describe(copy));
+            if (MessageBox.Show(dialog, confirm, "ClipCompose", MessageBoxButton.OKCancel, MessageBoxImage.Warning, MessageBoxResult.Cancel) != MessageBoxResult.OK)
+                return false;
+            var outcome = ImportProcedure.Replace(_templates, _settingsStore, _settings, library, "before-restore");
+            _settings = outcome.Settings;
+            if (!outcome.Succeeded)
+            {
+                RefreshStatus();
+                ShowMessage(outcome.Problem, MessageBoxImage.Warning, dialog);
+                return false;
+            }
+            Library = library;
+            restored = library;
+            _settingsWindow?.ReloadAfterReplace();
+            RefreshStatus();
+            return true;
+        });
+        if (restored is not null)
+            ShowMessage(string.Format(Strings.RestoreDoneFormat, restored.Categories.Count, restored.Templates.Count), MessageBoxImage.Information, owner);
     }
 
     /// <summary>

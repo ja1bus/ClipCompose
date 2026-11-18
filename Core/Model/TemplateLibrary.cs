@@ -103,6 +103,7 @@ public sealed class TemplateLibrary
         var index = list.FindIndex(c => c.Id == id);
         if (index < 0) return LibraryEdit.Fail(LibraryError.CategoryNotFound);
         var target = Math.Clamp(index + offset, 0, list.Count - 1);
+        if (target == index) return new(this, LibraryError.None, id); // 位置が変わらない（保存しない）
         var item = list[index];
         list.RemoveAt(index);
         list.Insert(target, item);

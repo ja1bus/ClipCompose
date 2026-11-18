@@ -25,15 +25,17 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="20" />
-                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="28" />
                 </Grid.ColumnDefinitions>
                 <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                 <TextBlock Grid.Column="1" Text="&#xE77F;" FontFamily="{x:Static v:UiFont.Icons}" FontSize="12" Foreground="#2E6DB4"
                            HorizontalAlignment="Center" VerticalAlignment="Center" ToolTip="{x:Static l:Strings.UsesClipboard}"
                            Visibility="{Binding UsesClipboard, Converter={StaticResource BoolToVisibility}}" />
-                <TextBlock Grid.Column="2" Text="&#xE840;" FontFamily="{x:Static v:UiFont.Icons}" FontSize="13" Foreground="#D9480F"
-                           HorizontalAlignment="Center" VerticalAlignment="Center" ToolTip="{x:Static l:Strings.PinnedMark}"
-                           Visibility="{Binding Pinned, Converter={StaticResource BoolToVisibility}}" />
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" ToolTip="{Binding PinLabel}"
+                            Visibility="{Binding Pinned, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Text="&#xE840;" FontFamily="{x:Static v:UiFont.Icons}" FontSize="13" Foreground="#D9480F" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding PinText}" FontSize="10.5" Foreground="#D9480F" FontWeight="SemiBold" VerticalAlignment="Bottom" Margin="1,0,0,0" />
+                </StackPanel>
             </Grid>
         </DataTemplate>
     </UserControl.Resources>

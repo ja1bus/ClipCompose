@@ -1,9 +1,13 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Threading;
 using ClipCompose.Core.Localization;
 using ClipCompose.Core.Model;
+using ClipCompose.Core.Settings;
+using ClipCompose.Services;
 
 namespace ClipCompose.Views;
 
@@ -14,15 +18,19 @@ namespace ClipCompose.Views;
 /// - カテゴリは見出しのクリック・Enter・←→（検索欄が空のとき）で開閉し、閉じている ID を設定に保存する。
 /// - ↑↓で見出しとテンプレートを移動、Enter で確定（見出しなら開閉）、Esc で中止。テンプレートのダブルクリックでも確定する。
 /// - IME の変換確定の Enter（Key.ImeProcessed として届く）では確定しない。
-/// - ［固定する］（Ctrl+P）で選んでいるテンプレートを固定・解除、Alt+↑↓ / Alt+Shift+↑↓ とドラッグで並べ替え（即時に保存）、［内容］（Ctrl+Space）で本文パネル。
+/// - ［固定する］（Ctrl+P）でスロットを選ぶメニューを開き、選んでいるテンプレートを固定・解除（1.3.0〜。番号キーで選べる）、Alt+↑↓ / Alt+Shift+↑↓ とドラッグで並べ替え（即時に保存）、［内容］（Ctrl+Space）で本文パネル。
 /// - 別のアプリへ移った（非アクティブになった）ら閉じて中止する。中止ではクリップボードを読み書きしない。
 ///   このため、エラーはメッセージボックス（別のウィンドウ）ではなく、この画面の中に表示する。
+/// - 開く位置は設定（中央・カーソルの近く・前回の位置）に従い、高さの上限とはみ出しの補正は置いたモニターの作業領域で決める（1.3.0〜）。
 /// 確定・中止は 1 回だけ通知する。クリップボードの処理は呼び出し側が、この画面を閉じた後に行う。
 /// </summary>
 public partial class PickerWindow : Window
 {
     private const string DragFormat = "ClipCompose.TreeRow";
     private const int PageRows = 10;
+
+    /// <summary>本文パネルの幅（DIU）。作業領域が狭いモニターでは最小まで縮める。</summary>
+    private const double PreviewMaxWidth = 360, PreviewMinWidth = 160;
     private static readonly Brush DropHighlight = new SolidColorBrush(Color.FromRgb(0xCC, 0xE4, 0xF7));
 
     private readonly AppHost _host;
@@ -34,6 +42,16 @@ public partial class PickerWindow : Window
     private readonly HashSet<Guid> _collapsed;
     private bool _collapseErrorShown;
     private ListBoxItem? _dropTarget;
+    private ContextMenu? _pinMenu;
+
+    // 開く位置（物理ピクセル）。表示前に決め、ウィンドウを作った後に大きさに合わせて置き直す。
+    private readonly string _placement;
+    private readonly (int X, int Y) _cursor;
+    private readonly MonitorArea _cursorMonitor;
+    private readonly (int X, int Y)? _remembered;
+    private readonly MonitorArea? _rememberedMonitor;
+    private IntPtr _hwnd;
+    private bool _fitPending;
 
     public PickerWindow(AppHost host, bool autoPaste)
     {
@@ -42,16 +60,40 @@ public partial class PickerWindow : Window
         InitializeComponent();
         ModeText.Text = autoPaste ? Strings.PickerAutoPaste : Strings.PickerCopyOnly;
         ModeText.ToolTip = autoPaste ? Strings.PickerAutoPasteTip : Strings.PickerCopyOnlyTip;
-        if (host.Hotkeys.Fixed.Status == Services.HotkeyStatus.Registered)
+        // 固定のショートカット（登録しているスロットだけ。長ければ省略し、ツールチップで全文）。
+        var fixedKeys = FixedSlotRules.Numbers
+            .Where(n => host.Hotkeys.Fixed(n).Status == HotkeyStatus.Registered)
+            .Select(n => string.Format(Strings.PickerFixedHotkeyFormat, n, ShortcutDisplay.Format(host.Hotkeys.Fixed(n).Shortcut)))
+            .ToList();
+        if (fixedKeys.Count > 0)
         {
-            FixedHotkeyText.Text = string.Format(Strings.PickerFixedHotkeyFormat, host.Hotkeys.Fixed.Shortcut);
+            FixedHotkeyText.Text = string.Join("   ", fixedKeys);
+            FixedHotkeyText.ToolTip = string.Join(Environment.NewLine, fixedKeys);
             FixedHotkeyText.Visibility = Visibility.Visible;
         }
-        // 高さは件数に合わせ、作業領域の約 6 割で止める（それ以上は一覧をスクロールする）。
-        MaxHeight = Math.Max(320, SystemParameters.WorkArea.Height * 0.6);
+
+        // 開く位置。表示前は、置く先の点をシステム DPI で換算して入れておく（そのモニターの拡大率でウィンドウが作られるように）。
+        var settings = host.Settings;
+        _placement = settings.PickerPlacement;
+        _cursor = DisplayArea.Cursor();
+        _cursorMonitor = DisplayArea.At(_cursor.X, _cursor.Y);
+        if (settings is { PickerLeft: { } left, PickerTop: { } top } && DisplayArea.IsOnAnyMonitor(left, top))
+        {
+            _remembered = (left, top);
+            _rememberedMonitor = DisplayArea.At(left, top);
+        }
+        var target = TargetMonitor.Work;
+        (int X, int Y) start = _placement == PickerPlacements.Remembered && _remembered is { } r ? r
+            : _placement == PickerPlacements.Cursor ? _cursor
+            : (target.Left + target.Width / 2, target.Top + target.Height / 2);
+        var sys = DisplayArea.SystemScale;
+        WindowStartupLocation = WindowStartupLocation.Manual;
+        Left = start.X / sys;
+        Top = start.Y / sys;
+
         SetPreviewVisible(host.Settings.PickerPreview, save: false);
         Refresh(null, null);
-        SizeChanged += (_, _) => KeepInWorkArea();
+        SizeChanged += (_, _) => ScheduleFit();
         Loaded += (_, _) =>
         {
             Activate();
@@ -77,9 +119,44 @@ public partial class PickerWindow : Window
 
     private TreeRow? SelectedTreeRow => List.SelectedItem as TreeRow;
 
+    /// <summary>選択画面を置くモニター（前回の位置ならその位置のモニター、それ以外はカーソルのモニター）。</summary>
+    private MonitorArea TargetMonitor =>
+        _placement == PickerPlacements.Remembered && _rememberedMonitor is { } m ? m : _cursorMonitor;
+
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        base.OnSourceInitialized(e);
+        _hwnd = new WindowInteropHelper(this).Handle;
+        // 高さは件数に合わせ、置くモニターの作業領域の約 6 割で止める（それ以上は一覧をスクロールする）。
+        var dpi = VisualTreeHelper.GetDpi(this).DpiScaleY;
+        MaxHeight = Math.Max(320, TargetMonitor.Work.Height / dpi * 0.6);
+        // 本文パネルの幅を、置くモニターの作業領域の幅に合わせる（幅の狭い高 DPI のモニター）。
+        UpdateLayout();
+        FitPreviewWidth();
+        // 拡大率の違うモニターへ動かすと WPF が大きさを変えるので、変わった大きさで 2 回目を合わせる。
+        for (var i = 0; i < 2; i++)
+        {
+            UpdateLayout();
+            if (DisplayArea.WindowRect(_hwnd) is not { } rect) return;
+            var (x, y) = PickerPlacements.Place(_placement, _cursorMonitor.Work, _cursor.X, _cursor.Y, _cursorMonitor.Scale,
+                _remembered, _rememberedMonitor?.Work, rect.Width, rect.Height);
+            if (x == rect.Left && y == rect.Top) return;
+            DisplayArea.MoveWindow(_hwnd, x, y);
+        }
+    }
+
+    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+    {
+        base.OnClosing(e);
+        // 「前回の位置」のときだけ、閉じる位置を覚える（確定・中止・非アクティブ化のどれでも）。
+        if (_placement == PickerPlacements.Remembered && DisplayArea.WindowRect(_hwnd) is { } rect) _host.SetPickerPosition(rect.Left, rect.Top);
+    }
+
     protected override void OnPreviewKeyDown(KeyEventArgs e)
     {
         base.OnPreviewKeyDown(e);
+        // 固定のメニューを開いている間は、メニューの操作（番号・↑↓・Enter・Esc）に任せる（Esc で選択画面を閉じない）。
+        if (_pinMenu is { IsOpen: true }) return;
         // Alt との組み合わせは Key.System として届く。変換中・変換確定の Enter は Key.ImeProcessed として届くため、ここでは確定しない。
         var key = e.Key == Key.System ? e.SystemKey : e.Key;
         var modifiers = Keyboard.Modifiers;
@@ -116,7 +193,7 @@ public partial class PickerWindow : Window
                 break;
             case Key.P when modifiers == ModifierKeys.Control:
                 e.Handled = true;
-                if (SelectedRow is { } pinRow) TogglePin(pinRow);
+                OpenPinMenu();
                 break;
             case Key.Space when modifiers == ModifierKeys.Control:
                 e.Handled = true;
@@ -142,6 +219,7 @@ public partial class PickerWindow : Window
 
     protected override void OnClosed(EventArgs e)
     {
+        _hwnd = IntPtr.Zero; // 予約した補正を閉じた後に行わない
         base.OnClosed(e);
         if (!_finished)
         {
@@ -159,7 +237,7 @@ public partial class PickerWindow : Window
     private void Refresh(Guid? selectTemplate, Guid? selectCategory = null)
     {
         SearchPlaceholder.Visibility = SearchBox.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
-        var rows = TreeRows.From(TemplateListView.ForPicker(_host.Library, Query, _collapsed), _host.Fixed.Template?.Id, collapsible: true);
+        var rows = TreeRows.From(TemplateListView.ForPicker(_host.Library, Query, _collapsed), _host.SlotOf, collapsible: true);
         List.ItemsSource = rows;
         List.SelectedItem = rows.FirstOrDefault(r => r is TemplateRow t && t.Template.Id == selectTemplate)
             ?? rows.FirstOrDefault(r => r is CategoryRow c && c.CategoryId == selectCategory)
@@ -249,26 +327,37 @@ public partial class PickerWindow : Window
 
     // ---- 固定 ----
 
-    private void OnTogglePin(object sender, RoutedEventArgs e)
-    {
-        if (SelectedRow is { } row) TogglePin(row);
-    }
+    private void OnTogglePin(object sender, RoutedEventArgs e) => OpenPinMenu();
 
-    /// <summary>［固定する］／［固定解除］を選んでいる行に合わせる。見出しを選んでいるときは押せない。</summary>
+    /// <summary>
+    /// ［固定する］の文字を選んでいる行に合わせる（固定中なら「固定 N」）。見出しを選んでいるとき・設定を保存できないときは押せない。
+    /// </summary>
     private void UpdatePinButton()
     {
-        PinButton.IsEnabled = SelectedRow is not null;
-        PinText.Text = SelectedRow is { Pinned: true } ? Strings.ButtonUnpin : Strings.ButtonPin;
+        PinButton.IsEnabled = SelectedRow is not null && !_host.SettingsBlocked;
+        PinText.Text = SelectedRow is { PinSlot: { } n } ? string.Format(Strings.ButtonPinnedSlotFormat, n) : Strings.ButtonPin;
     }
 
-    /// <summary>固定する（固定中なら解除する）。実行はしない。</summary>
-    private void TogglePin(TemplateRow row)
+    /// <summary>スロットを選ぶメニューを［固定する］の上に開く。選んでもテンプレートは実行しない。</summary>
+    private void OpenPinMenu()
     {
-        var selected = SelectedTreeRow;
-        var error = _host.SetFixed(row.Pinned ? null : row.Template.Id);
-        if (error.Length > 0) ShowError(error);
-        else ClearError();
-        Refresh((selected as TemplateRow)?.Template.Id, selected?.CategoryId);
+        if (SelectedRow is not { } row || _host.SettingsBlocked || _pinMenu is { IsOpen: true }) return;
+        var focused = Keyboard.FocusedElement;
+        var menu = PinMenu.Create(row.Template, _host.FixedAll, (slot, id) =>
+        {
+            var error = _host.SetFixed(slot, id);
+            if (error.Length > 0) ShowError(error);
+            else ClearError();
+            Refresh(row.Template.Id, row.CategoryId);
+        });
+        menu.Closed += (_, _) =>
+        {
+            if (_pinMenu == menu) _pinMenu = null;
+            // メニューを閉じたら元の場所（普通は検索欄）へ戻す。
+            if (!_finished) (focused ?? SearchBox).Focus();
+        };
+        _pinMenu = menu;
+        PinMenu.Open(menu, PinButton);
     }
 
     // ---- 並べ替え ----
@@ -417,6 +506,7 @@ public partial class PickerWindow : Window
         PreviewPane.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
         PreviewButton.FontWeight = visible ? FontWeights.SemiBold : FontWeights.Normal;
         UpdatePreview();
+        if (visible && _hwnd != IntPtr.Zero) FitPreviewWidth();
         if (save) _host.SetPickerPreview(visible);
     }
 
@@ -465,11 +555,52 @@ public partial class PickerWindow : Window
 
     private void ClearError() => ErrorText.Visibility = Visibility.Collapsed;
 
-    /// <summary>本文パネルを開くなどで大きさが変わったとき、作業領域からはみ出さないように寄せる。</summary>
+    protected override void OnDpiChanged(DpiScale oldDpi, DpiScale newDpi)
+    {
+        base.OnDpiChanged(oldDpi, newDpi);
+        // 拡大率の違うモニターへ動いた。そのモニターの幅で本文パネルの幅と位置を合わせ直す。
+        ScheduleFit();
+    }
+
+    /// <summary>
+    /// 本文パネルの幅と、作業領域に収める補正を予約する。WPF は SizeChanged の後（LayoutUpdated）で HWND の大きさを変えるため、
+    /// SizeChanged の中で GetWindowRect を読むと変更前の大きさになる。レイアウトの後に 1 回だけ行う（閉じた後は何もしない）。
+    /// </summary>
+    private void ScheduleFit()
+    {
+        if (_fitPending || _hwnd == IntPtr.Zero) return;
+        _fitPending = true;
+        Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
+        {
+            _fitPending = false;
+            if (_hwnd == IntPtr.Zero) return;
+            // 幅を変えた場合は、その後の SizeChanged で改めて予約されて寄せる。
+            if (!FitPreviewWidth()) KeepInWorkArea();
+        });
+    }
+
+    /// <summary>
+    /// 本文パネルの幅を、いまのモニターの作業領域の幅（DIU）に収まるように決める（<see cref="PreviewMinWidth"/>〜<see cref="PreviewMaxWidth"/>）。
+    /// 幅の狭い高 DPI のモニターで、本文パネルを開いた画面がはみ出さないようにする。幅を変えたら true。
+    /// </summary>
+    private bool FitPreviewWidth()
+    {
+        if (_hwnd == IntPtr.Zero || Content is not FrameworkElement root || root.ActualWidth <= 0) return false;
+        var scale = VisualTreeHelper.GetDpi(this).DpiScaleX;
+        var available = DisplayArea.Of(_hwnd).Work.Width / scale;
+        // 枠と外側の余白（ウィンドウの幅 − 中身の幅）、一覧の側、本文パネルの左の間隔を除いた残り。
+        var chrome = ActualWidth - root.ActualWidth;
+        var width = Math.Clamp(Math.Floor(available - chrome - LeftPane.ActualWidth - PreviewPane.Margin.Left), PreviewMinWidth, PreviewMaxWidth);
+        if (Math.Abs(PreviewPane.Width - width) < 0.5) return false;
+        PreviewPane.Width = width;
+        return true;
+    }
+
+    /// <summary>本文パネルを開くなどで大きさが変わったとき、いまのモニターの作業領域からはみ出さないように寄せる（物理ピクセル）。</summary>
     private void KeepInWorkArea()
     {
-        var work = SystemParameters.WorkArea;
-        if (Left + ActualWidth > work.Right) Left = Math.Max(work.Left, work.Right - ActualWidth);
-        if (Top + ActualHeight > work.Bottom) Top = Math.Max(work.Top, work.Bottom - ActualHeight);
+        if (DisplayArea.WindowRect(_hwnd) is not { } rect) return;
+        var (x, y) = PickerPlacements.ClampInto(DisplayArea.Of(_hwnd).Work, rect.Left, rect.Top, rect.Width, rect.Height);
+        if (x != rect.Left || y != rect.Top) DisplayArea.MoveWindow(_hwnd, x, y);
     }
 }

@@ -6,10 +6,24 @@ using static ClipCompose.Interop.NativeMethods;
 
 namespace ClipCompose.Services;
 
+/// <summary>ショートカットの種類。値は RegisterHotKey の ID（1.2.1 の固定 = 2 はスロット 1 と同じ値）。</summary>
 public enum HotkeyMode
 {
     Normal = 1,
-    Fixed = 2,
+    Fixed1 = 2,
+    Fixed2 = 3,
+    Fixed3 = 4,
+}
+
+public static class HotkeyModes
+{
+    public static readonly HotkeyMode[] All = [HotkeyMode.Normal, HotkeyMode.Fixed1, HotkeyMode.Fixed2, HotkeyMode.Fixed3];
+
+    /// <summary>固定スロット番号（1〜3）のモード。</summary>
+    public static HotkeyMode ForSlot(int slot) => (HotkeyMode)(slot + 1);
+
+    /// <summary>固定のモードのスロット番号（通常は null）。</summary>
+    public static int? SlotOf(HotkeyMode mode) => mode == HotkeyMode.Normal ? null : (int)mode - 1;
 }
 
 public enum HotkeyStatus
@@ -29,22 +43,23 @@ public sealed record HotkeyRegistration(Shortcut Shortcut, HotkeyStatus Status, 
     public string Describe() => Status switch
     {
         HotkeyStatus.Unassigned => Strings.HotkeyUnassigned,
-        HotkeyStatus.Registered => string.Format(Strings.HotkeyRegisteredFormat, Shortcut),
+        HotkeyStatus.Registered => string.Format(Strings.HotkeyRegisteredFormat, ShortcutDisplay.Format(Shortcut)),
         HotkeyStatus.Suspended => Strings.HotkeySuspended,
-        _ when ErrorCode == ERROR_HOTKEY_ALREADY_REGISTERED => string.Format(Strings.HotkeyInUseFormat, Shortcut),
-        _ => string.Format(Strings.HotkeyErrorFormat, Shortcut, ErrorCode),
+        _ when ErrorCode == ERROR_HOTKEY_ALREADY_REGISTERED => string.Format(Strings.HotkeyInUseFormat, ShortcutDisplay.Format(Shortcut)),
+        _ => string.Format(Strings.HotkeyErrorFormat, ShortcutDisplay.Format(Shortcut), ErrorCode),
     };
 }
 
 /// <summary>
-/// 通常モード・固定モードのグローバルホットキー（仕様書 §10）。RegisterHotKey + MOD_NOREPEAT
+/// 通常モード・固定スロット 1〜3 のグローバルホットキー（仕様書 §10。1.3.0〜は 4 本）。RegisterHotKey + MOD_NOREPEAT
 /// （押しっぱなしの自動リピートで連続実行しない）。メッセージ専用ウィンドウで WM_HOTKEY を受ける（常時フック・ポーリングはしない）。
 /// 既定はどちらも未設定。登録に失敗しても黙って無視せず、状態として表示する。
 /// </summary>
 public sealed class HotkeyService : IDisposable
 {
     private readonly HwndSource _source;
-    private readonly Dictionary<HotkeyMode, Shortcut> _shortcuts = new() { [HotkeyMode.Normal] = Shortcut.None, [HotkeyMode.Fixed] = Shortcut.None };
+    private readonly Dictionary<HotkeyMode, Shortcut> _shortcuts = HotkeyModes.All.ToDictionary(m => m, _ => Shortcut.None);
+    private readonly Dictionary<HotkeyMode, HotkeyRegistration> _states = HotkeyModes.All.ToDictionary(m => m, _ => HotkeyRegistration.Unassigned);
     private readonly HashSet<HotkeyMode> _registered = [];
     private int _suspendCount;
 
@@ -61,32 +76,33 @@ public sealed class HotkeyService : IDisposable
     /// <summary>登録状態が変わった。</summary>
     public event EventHandler? StatusChanged;
 
-    public HotkeyRegistration Normal { get; private set; } = HotkeyRegistration.Unassigned;
+    public HotkeyRegistration Normal => _states[HotkeyMode.Normal];
 
-    public HotkeyRegistration Fixed { get; private set; } = HotkeyRegistration.Unassigned;
+    public HotkeyRegistration Get(HotkeyMode mode) => _states[mode];
 
-    public HotkeyRegistration Get(HotkeyMode mode) => mode == HotkeyMode.Normal ? Normal : Fixed;
+    /// <summary>固定スロット（1〜3）の状態。</summary>
+    public HotkeyRegistration Fixed(int slot) => _states[HotkeyModes.ForSlot(slot)];
 
-    /// <summary>起動時の登録。失敗しても状態として残す（設定画面・トレイは使える）。</summary>
-    public void Apply(Shortcut normal, Shortcut @fixed)
+    /// <summary>起動時の登録。失敗しても状態として残す（設定画面・トレイは使える）。<paramref name="slots"/> は固定スロット 1〜3。</summary>
+    public void Apply(Shortcut normal, IReadOnlyList<Shortcut> slots)
     {
         _shortcuts[HotkeyMode.Normal] = normal;
-        _shortcuts[HotkeyMode.Fixed] = @fixed;
+        for (var i = 0; i < slots.Count && i < HotkeyModes.All.Length - 1; i++) _shortcuts[HotkeyModes.ForSlot(i + 1)] = slots[i];
         RegisterAll();
     }
 
     /// <summary>
-    /// 設定変更での登録。新しい組み合わせのどちらかが登録できなければ、以前の組み合わせに戻して false を返す
+    /// 設定変更での登録。新しい組み合わせのどれかが登録できなければ、以前の組み合わせに戻して false を返す
     /// （旧設定を利用可能な状態に戻す）。<paramref name="failure"/> は登録できなかったものの状態。
     /// </summary>
-    public bool TryChange(Shortcut normal, Shortcut @fixed, out HotkeyRegistration? failure)
+    public bool TryChange(Shortcut normal, IReadOnlyList<Shortcut> slots, out HotkeyRegistration? failure)
     {
         var previousNormal = _shortcuts[HotkeyMode.Normal];
-        var previousFixed = _shortcuts[HotkeyMode.Fixed];
-        Apply(normal, @fixed);
-        failure = Normal.Status == HotkeyStatus.Failed ? Normal : Fixed.Status == HotkeyStatus.Failed ? Fixed : null;
+        var previousSlots = HotkeyModes.All.Skip(1).Select(m => _shortcuts[m]).ToList();
+        Apply(normal, slots);
+        failure = HotkeyModes.All.Select(m => _states[m]).FirstOrDefault(r => r.Status == HotkeyStatus.Failed);
         if (failure is null) return true;
-        Apply(previousNormal, previousFixed);
+        Apply(previousNormal, previousSlots);
         return false;
     }
 
@@ -95,8 +111,7 @@ public sealed class HotkeyService : IDisposable
     {
         if (_suspendCount++ > 0) return;
         UnregisterAll();
-        Normal = Suspended(HotkeyMode.Normal);
-        Fixed = Suspended(HotkeyMode.Fixed);
+        foreach (var mode in HotkeyModes.All) _states[mode] = Suspended(mode);
         StatusChanged?.Invoke(this, EventArgs.Empty);
     }
 
@@ -119,16 +134,7 @@ public sealed class HotkeyService : IDisposable
     private void RegisterAll()
     {
         UnregisterAll();
-        if (_suspendCount > 0)
-        {
-            Normal = Suspended(HotkeyMode.Normal);
-            Fixed = Suspended(HotkeyMode.Fixed);
-        }
-        else
-        {
-            Normal = Register(HotkeyMode.Normal);
-            Fixed = Register(HotkeyMode.Fixed);
-        }
+        foreach (var mode in HotkeyModes.All) _states[mode] = _suspendCount > 0 ? Suspended(mode) : Register(mode);
         StatusChanged?.Invoke(this, EventArgs.Empty);
     }
 

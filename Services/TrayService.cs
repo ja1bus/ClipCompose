@@ -1,15 +1,19 @@
 using System.Windows.Forms;
 using ClipCompose.Core.Execution;
 using ClipCompose.Core.Localization;
+using ClipCompose.Core.Text;
 
 namespace ClipCompose.Services;
 
-/// <summary>メニューを開くときに表示する現在の状態。</summary>
-public sealed record TrayState(FixedTemplate Fixed, HotkeyRegistration NormalHotkey, HotkeyRegistration FixedHotkey);
+/// <summary>固定スロット 1 つの状態（テンプレートとショートカット）。</summary>
+public sealed record TraySlot(FixedTemplate Fixed, HotkeyRegistration Hotkey);
+
+/// <summary>メニューを開くときに表示する現在の状態。<see cref="Slots"/> はスロット 1〜3。</summary>
+public sealed record TrayState(IReadOnlyList<TraySlot> Slots, HotkeyRegistration NormalHotkey);
 
 /// <summary>
 /// タスクトレイのアイコンとメニュー（仕様書 §3）。WinForms の NotifyIcon を使う（WindowsDesktop 共有フレームワーク内）。
-/// 左クリックで選択画面（コピーのみ）。メニュー: 選んでコピー / 固定テンプレートをコピー（固定しているときだけ） / 設定 / 終了。
+/// 左クリックで選択画面（コピーのみ）。メニュー: 選んでコピー / 固定テンプレートをコピー（参照先のあるスロットごと） / 設定 / 終了。
 /// メニューの内容は開くたびに保存済みのデータから作り直す。
 /// </summary>
 public sealed class TrayService : IDisposable
@@ -18,6 +22,8 @@ public sealed class TrayService : IDisposable
     private readonly System.Drawing.Icon? _ownedIcon;
     private readonly ContextMenuStrip _menu;
     private readonly Func<TrayState> _state;
+    /// <summary>メニューの先頭の項目の太字（作り直すたびに作らず、1 つを使い回して Dispose で解放する）。</summary>
+    private System.Drawing.Font? _boldFont;
 
     public TrayService(Func<TrayState> state)
     {
@@ -40,7 +46,8 @@ public sealed class TrayService : IDisposable
     }
 
     public event EventHandler? PickerRequested;
-    public event EventHandler? RunFixedRequested;
+    /// <summary>固定スロットのコピーが選ばれた（引数はスロット番号）。</summary>
+    public event EventHandler<int>? RunFixedRequested;
     public event EventHandler? SettingsRequested;
     public event EventHandler? ExitRequested;
 
@@ -48,21 +55,13 @@ public sealed class TrayService : IDisposable
     public void UpdateTooltip()
     {
         var s = _state();
-        var lines = new List<string> { "ClipCompose" };
-        if (s.NormalHotkey.Status == HotkeyStatus.Registered)
-            lines.Add(string.Format(Strings.TrayTooltipNormalFormat, s.NormalHotkey.Shortcut));
-        if (s.Fixed.State == FixedTemplateState.Found)
-        {
-            lines.Add(s.FixedHotkey.Status == HotkeyStatus.Registered
-                ? string.Format(Strings.TrayTooltipFixedHotkeyFormat, s.Fixed.Template!.Name, s.FixedHotkey.Shortcut)
-                : string.Format(Strings.TrayTooltipFixedFormat, s.Fixed.Template!.Name));
-        }
-        else
-        {
-            lines.Add(Strings.TrayTooltipNoFixed);
-        }
-        var tip = string.Join("\n", lines);
-        _icon.Text = tip.Length > 127 ? tip[..127] : tip; // NotifyIcon.Text は 127 文字まで
+        var normal = s.NormalHotkey.Status == HotkeyStatus.Registered ? ShortcutDisplay.Format(s.NormalHotkey.Shortcut) : null;
+        var slots = s.Slots
+            .Where(x => x.Fixed.State == FixedTemplateState.Found)
+            .Select(x => new TrayTooltipSlot(x.Fixed.Slot, x.Fixed.Template!.Name,
+                x.Hotkey.Status == HotkeyStatus.Registered ? ShortcutDisplay.Format(x.Hotkey.Shortcut) : null))
+            .ToList();
+        _icon.Text = TrayTooltip.Build(normal, slots); // NotifyIcon.Text は 127 文字まで
     }
 
     public void ShowBalloon(string title, string text)
@@ -76,6 +75,7 @@ public sealed class TrayService : IDisposable
         _menu.Dispose();
         _icon.Dispose();
         _ownedIcon?.Dispose();
+        _boldFont?.Dispose();
     }
 
     private void Rebuild()
@@ -86,18 +86,19 @@ public sealed class TrayService : IDisposable
 
         var picker = new ToolStripMenuItem(Strings.TrayOpenPicker, null, (_, _) => PickerRequested?.Invoke(this, EventArgs.Empty))
         {
-            Font = new System.Drawing.Font(_menu.Font, System.Drawing.FontStyle.Bold),
+            Font = _boldFont ??= new System.Drawing.Font(_menu.Font, System.Drawing.FontStyle.Bold),
             ShortcutKeyDisplayString = HotkeyText(s.NormalHotkey),
         };
         _menu.Items.Add(picker);
 
-        // 固定しているときだけ出す（固定・解除は選択画面の📌と設定画面で行う）。
-        if (s.Fixed.State == FixedTemplateState.Found)
+        // 参照先のあるスロットだけ出す（固定・解除は選択画面の［固定する］と設定画面で行う）。
+        foreach (var slot in s.Slots.Where(x => x.Fixed.State == FixedTemplateState.Found))
         {
-            _menu.Items.Add(new ToolStripMenuItem(string.Format(Strings.TrayRunFixedFormat, s.Fixed.Template!.Name), null,
-                (_, _) => RunFixedRequested?.Invoke(this, EventArgs.Empty))
+            var number = slot.Fixed.Slot;
+            _menu.Items.Add(new ToolStripMenuItem(string.Format(Strings.TrayRunFixedFormat, number, MenuText(slot.Fixed.Template!.Name)), null,
+                (_, _) => RunFixedRequested?.Invoke(this, number))
             {
-                ShortcutKeyDisplayString = HotkeyText(s.FixedHotkey),
+                ShortcutKeyDisplayString = HotkeyText(slot.Hotkey),
             });
         }
 
@@ -108,6 +109,9 @@ public sealed class TrayService : IDisposable
     }
 
     private static string HotkeyText(HotkeyRegistration r) => r.Status == HotkeyStatus.Unassigned ? "" : r.Describe();
+
+    /// <summary>WinForms のメニューでは "&amp;" がアクセスキーになるため、名前の "&amp;" はそのまま表示されるよう重ねる。</summary>
+    private static string MenuText(string name) => name.Replace("&", "&&");
 
     /// <summary>exe に埋め込まれたアイコン（csproj の ApplicationIcon）を通知領域の大きさで取り出す。</summary>
     private static System.Drawing.Icon? LoadAppIcon()

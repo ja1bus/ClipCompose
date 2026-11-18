@@ -62,7 +62,7 @@ public sealed class ComposeRunner
     private readonly IClipboardPort _clipboard;
     private readonly IPastePort _paste;
 
-    /// <summary>直前に自分が書き込んだ後の更新番号（再合成の判定だけに使う。本文は持たない）。</summary>
+    /// <summary>直前に自分が変数ありで書き込んだ後の更新番号（再合成の判定だけに使う。本文は持たない。変数なしの出力では null）。</summary>
     private uint? _lastOutputSequence;
 
     public ComposeRunner(IClipboardPort clipboard, IPastePort paste)
@@ -160,7 +160,8 @@ public sealed class ComposeRunner
                 _lastOutputSequence = null;
                 return new(RunStatus.Failed, Failure: RunFailure.WriteFailed);
         }
-        _lastOutputSequence = write.Sequence;
+        // 二重合成の判定には変数ありの出力だけを使う（定型文をコピーした直後に、それを {{clipboard}} へ差し込めるように）。
+        _lastOutputSequence = template.UsesClipboard ? write.Sequence : null;
 
         if (target is not { } t) return new(RunStatus.Copied);
         var paste = await _paste.PasteAsync(t, write.Sequence);

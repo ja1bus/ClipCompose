@@ -320,4 +320,41 @@ public sealed class ComposeRunnerTests
         library = library.AddTemplate(category, "other", "x").Library!.DeleteTemplate(edit.Id).Library!;
         Assert.Equal(FixedTemplateState.Missing, FixedTemplate.Resolve(edit.Id, library).State);
     }
+
+    // ---- 1.3.0: 変数なしの出力は二重合成の判定に使わない（整備 3。仕様書 §8。試験 T-27） ----
+
+    [Fact]
+    public async Task Template_with_variable_runs_right_after_one_without_variable()
+    {
+        var thanks = T("ありがとうございました。");
+        var reply = T("次の文に返信してください。\n{{clipboard}}");
+        Assert.Equal(RunStatus.Copied, (await _runner.RunAsync(thanks, null)).Status);
+        Assert.Equal(0, _clipboard.ReadCount);
+        Assert.Equal(RunStatus.Copied, (await _runner.RunAsync(reply, null)).Status);
+        Assert.Equal(1, _clipboard.ReadCount);
+        Assert.Equal("次の文に返信してください。\nありがとうございました。", _clipboard.Writes[^1].Text);
+    }
+
+    [Fact]
+    public async Task Variable_after_variable_after_text_only_runs()
+    {
+        _clipboard.Text = "source";
+        var reply = T("R: {{clipboard}}");
+        Assert.Equal(RunStatus.Copied, (await _runner.RunAsync(reply, null)).Status);
+        Assert.Equal(RunStatus.Copied, (await _runner.RunAsync(T("plain"), null)).Status);
+        Assert.Equal(RunStatus.Copied, (await _runner.RunAsync(reply, null)).Status);
+        Assert.Equal("R: plain", _clipboard.Writes[^1].Text);
+    }
+
+    [Fact]
+    public async Task Variable_after_variable_still_stops_unless_the_clipboard_changed()
+    {
+        _clipboard.Text = "source";
+        var reply = T("R: {{clipboard}}");
+        Assert.Equal(RunStatus.Copied, (await _runner.RunAsync(reply, null)).Status);
+        Assert.Equal(RunStatus.AlreadyComposed, (await _runner.RunAsync(reply, null)).Status);
+        Assert.Single(_clipboard.Writes);
+        _clipboard.Sequence++;
+        Assert.Equal(RunStatus.Copied, (await _runner.RunAsync(reply, null)).Status);
+    }
 }

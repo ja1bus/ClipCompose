@@ -11,6 +11,7 @@ public sealed record SettingsLoad(LoadKind Kind, AppSettings Settings, string Pr
 /// <summary>
 /// settings.json（PC ごとの設定。仕様書 §11）。テンプレートとは別のファイルなので、テンプレートが読めなくても使える。
 /// 不正な JSON・新しい schemaVersion なら既定値で動き、元のファイルを残したまま保存を止める。個々の値の問題は補正する。
+/// schemaVersion 1 は読み込み時に 2 へ移す（固定をスロット 1 へ。書き込みは次に設定を保存したとき）。
 /// </summary>
 public sealed class SettingsStore
 {
@@ -26,6 +27,8 @@ public sealed class SettingsStore
     };
 
     private static JsonTypeInfo<AppSettings> TypeInfo => (JsonTypeInfo<AppSettings>)Options.GetTypeInfo(typeof(AppSettings));
+
+    private static JsonTypeInfo<LegacySettingsV1> LegacyTypeInfo => (JsonTypeInfo<LegacySettingsV1>)Options.GetTypeInfo(typeof(LegacySettingsV1));
 
     public SettingsStore(string directory)
     {
@@ -66,14 +69,26 @@ public sealed class SettingsStore
         try
         {
             var bytes = SafeFile.ReadLimited(path);
+            int version;
             using (var document = JsonDocument.Parse(bytes))
             {
-                if (!TemplateFileFormat.TryGetSchemaVersion(document, out var version)) return Fail(Strings.ProblemNoSchemaVersion);
+                if (!TemplateFileFormat.TryGetSchemaVersion(document, out version)) return Fail(Strings.ProblemNoSchemaVersion);
                 if (version > AppSettings.CurrentSchemaVersion) return Fail(string.Format(Strings.ProblemNewerSchemaFormat, version));
             }
-            var settings = JsonSerializer.Deserialize(bytes, TypeInfo) ?? new AppSettings();
+            var fixes = new List<string>();
+            AppSettings settings;
+            if (version < 2)
+            {
+                // 版 1 は 1.2.1 の項目だけを旧形式の型で読む（新しい版の項目の型で、移行できなくならないように）。
+                settings = MigrateFromVersion1(bytes);
+                fixes.Add("Migrated from schemaVersion 1: the pinned template and shortcut moved to slot 1");
+            }
+            else
+            {
+                settings = JsonSerializer.Deserialize(bytes, TypeInfo) ?? new AppSettings();
+            }
             settings.SchemaVersion = AppSettings.CurrentSchemaVersion;
-            var fixes = SettingsNormalizer.Normalize(settings);
+            fixes.AddRange(SettingsNormalizer.Normalize(settings));
             SaveBlocked = false;
             return new(LoadKind.Loaded, settings, "", fixes);
         }
@@ -96,6 +111,31 @@ public sealed class SettingsStore
             SaveBlocked = true;
             return new(LoadKind.Failed, new AppSettings(), string.Format(Strings.LoadFailedFormat, path, reason), []);
         }
+    }
+
+    /// <summary>
+    /// schemaVersion 1（1.2.1 まで）を 1.2.1 の項目だけで読み、固定 1 件をスロット 1 へ移す（スロット 2・3 は未設定）。
+    /// 1.2.1 が知らない項目（fixedSlots・pickerPlacement 等）は型が違っても無視し、既定値にする。
+    /// 1.2.1 の項目の型が違う場合は JsonException（1.2.1 と同じく読み込み失敗）。
+    /// </summary>
+    private static AppSettings MigrateFromVersion1(byte[] bytes)
+    {
+        var legacy = JsonSerializer.Deserialize(bytes, LegacyTypeInfo) ?? new LegacySettingsV1();
+        var settings = new AppSettings
+        {
+            NormalHotkey = legacy.NormalHotkey!,
+            NormalAutoPaste = legacy.NormalAutoPaste,
+            Language = legacy.Language!,
+            TrayNoticeShown = legacy.TrayNoticeShown,
+            PickerPreview = legacy.PickerPreview,
+            CollapsedCategoryIds = legacy.CollapsedCategoryIds!,
+            FixedSlots = FixedSlotRules.Defaults(),
+        };
+        var slot = settings.FixedSlots[0];
+        slot.TemplateId = legacy.FixedTemplateId;
+        slot.Hotkey = legacy.FixedHotkey ?? "";
+        slot.AutoPaste = legacy.FixedAutoPaste;
+        return settings;
     }
 
     /// <summary>読めない設定ファイルを退避して、既定値で保存し直す（利用者が選んだ場合だけ）。</summary>

@@ -29,12 +29,12 @@ public sealed class DataTransferTests : IDisposable
         _current = pinned.Library!.AddTemplate(a.Id, "other", "other body").Library!.AddTemplate(b.Id, "b1", "secret b1").Library!;
         (_a, _b, _pinned) = (a.Id, b.Id, pinned.Id);
         Assert.True(_templates.Save(_current).Succeeded);
-        Assert.True(_settings.Save(new AppSettings { FixedTemplateId = _pinned }).Succeeded);
+        Assert.True(_settings.Save(Pinned()).Succeeded);
     }
 
     public void Dispose() => _dir.Dispose();
 
-    private AppSettings Pinned() => new() { FixedTemplateId = _pinned };
+    private AppSettings Pinned() => TestSettings.PinnedInSlot1(_pinned);
 
     private string[] Copies(string label) => Directory.GetFiles(_dir.Path, $"templates.{label}-*.json");
 
@@ -61,7 +61,7 @@ public sealed class DataTransferTests : IDisposable
         var merged = LibraryMerge.Apply(_current, imported, LibraryMerge.Plan(_current, imported, new Dictionary<Guid, MergeMode> { [file.Id] = MergeMode.AddAsNew }));
         var outcome = ImportProcedure.SaveRemoving(_templates, _settings, Pinned(), merged.Library, merged.RemovedTemplateIds, "before-import");
         Assert.True(outcome.Succeeded, outcome.Problem);
-        Assert.Equal(_pinned, outcome.Settings.FixedTemplateId); // 固定はそのまま
+        Assert.Equal(_pinned, outcome.Settings.Slot(1).TemplateId); // 固定はそのまま
         var saved = _templates.Load().Library;
         Assert.Equal("pinned body", saved.FindTemplate(_pinned)!.Body); // 既存は上書きされない
         Assert.Equal(3, saved.Categories.Count);
@@ -77,8 +77,8 @@ public sealed class DataTransferTests : IDisposable
         Assert.Contains(_pinned, merged.RemovedTemplateIds);
         var outcome = ImportProcedure.SaveRemoving(_templates, _settings, Pinned(), merged.Library, merged.RemovedTemplateIds, "before-import");
         Assert.True(outcome.Succeeded, outcome.Problem);
-        Assert.Null(outcome.Settings.FixedTemplateId);
-        Assert.Null(new SettingsStore(_dir.Path).Load().Settings.FixedTemplateId);
+        Assert.Null(outcome.Settings.Slot(1).TemplateId);
+        Assert.Null(new SettingsStore(_dir.Path).Load().Settings.Slot(1).TemplateId);
         Assert.Equal(["new only"], _templates.Load().Library.TemplatesIn(_a).Select(t => t.Name));
     }
 
@@ -122,7 +122,7 @@ public sealed class DataTransferTests : IDisposable
         var removed = _current.TemplatesIn(_a).Select(t => t.Id).ToHashSet();
         var outcome = ImportProcedure.SaveRemoving(_templates, _settings, Pinned(), edit.Library!, removed, "before-delete");
         Assert.True(outcome.Succeeded, outcome.Problem);
-        Assert.Null(outcome.Settings.FixedTemplateId);
+        Assert.Null(outcome.Settings.Slot(1).TemplateId);
         var copy = Assert.Single(Copies("before-delete"));
         // 残した写しは［全件置換で復元］でそのまま読める。
         var restored = _templates.ReadImport(copy);
@@ -139,7 +139,7 @@ public sealed class DataTransferTests : IDisposable
         {
             var outcome = ImportProcedure.SaveRemoving(_templates, _settings, Pinned(), edit.Library!, removed, "before-delete");
             Assert.False(outcome.Succeeded);
-            Assert.Equal(_pinned, outcome.Settings.FixedTemplateId);
+            Assert.Equal(_pinned, outcome.Settings.Slot(1).TemplateId);
         }
         Assert.NotNull(_templates.Load().Library.FindCategory(_a));
         Assert.Empty(Copies("before-delete"));
@@ -152,7 +152,7 @@ public sealed class DataTransferTests : IDisposable
         var edit = _current.DeleteCategoryWithTemplates(_b);
         var outcome = ImportProcedure.SaveRemoving(_templates, _settings, Pinned(), edit.Library!, _current.TemplatesIn(_b).Select(t => t.Id).ToHashSet(), "before-delete");
         Assert.True(outcome.Succeeded, outcome.Problem);
-        Assert.Equal(_pinned, outcome.Settings.FixedTemplateId);
+        Assert.Equal(_pinned, outcome.Settings.Slot(1).TemplateId);
         Assert.Equal(settingsBefore, File.ReadAllBytes(_settings.FilePath));
     }
 
@@ -213,8 +213,10 @@ public sealed class DataTransferTests : IDisposable
         var load = new SettingsStore(_dir.Path).Load();
         Assert.Equal(LoadKind.Loaded, load.Kind);
         Assert.Empty(load.Settings.CollapsedCategoryIds);
-        Assert.Equal(_pinned, load.Settings.FixedTemplateId);
-        Assert.Empty(load.Fixes);
+        Assert.Equal(_pinned, load.Settings.Slot(1).TemplateId);
+        // 1.3.0: schemaVersion 1 からの移行の記録だけ（値の補正は無い）。
+        Assert.Single(load.Fixes, f => f.StartsWith("Migrated from schemaVersion 1"));
+        Assert.Single(load.Fixes);
     }
 
     [Fact]

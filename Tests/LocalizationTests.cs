@@ -165,9 +165,11 @@ public sealed partial class LocalizationTests
     public void Setting_fix_records_are_English_regardless_of_ui_language()
     {
         using var _ = new UiCultureScope("ja");
-        var s = new AppSettings { Language = "fr", NormalHotkey = "bad", FixedHotkey = "Shift+A" };
+        var s = new AppSettings { Language = "fr", NormalHotkey = "bad", PickerPlacement = "top" };
+        s.Slot(1).Hotkey = "Shift+A";
+        s.FixedSlots.Add(new FixedSlot()); // 要素数の補正（1.3.0）
         var fixes = SettingsNormalizer.Normalize(s);
-        Assert.Equal(3, fixes.Count);
+        Assert.Equal(5, fixes.Count);
         Assert.DoesNotContain(fixes, f => JapaneseChars().IsMatch(f));
     }
 }

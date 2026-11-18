@@ -5,7 +5,7 @@
         xmlns:v="clr-namespace:ClipCompose.Views"
         Title="{x:Static l:Strings.PickerTitle}"
         SizeToContent="WidthAndHeight" ResizeMode="NoResize" WindowStyle="ToolWindow"
-        WindowStartupLocation="CenterScreen" Topmost="True" ShowInTaskbar="False"
+        Topmost="True" ShowInTaskbar="False"
         FontFamily="{x:Static v:UiFont.Family}" FontSize="13">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
@@ -60,7 +60,7 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="20" />
-                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="28" />
                 </Grid.ColumnDefinitions>
                 <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                 <!-- 検索結果（平らな一覧）では所属カテゴリを添える。行の高さは変えない。 -->
@@ -70,10 +70,12 @@
                 <TextBlock Grid.Column="2" Text="&#xE77F;" FontFamily="{x:Static v:UiFont.Icons}" FontSize="12" Foreground="#2E6DB4"
                            HorizontalAlignment="Center" VerticalAlignment="Center" ToolTip="{x:Static l:Strings.UsesClipboard}"
                            Visibility="{Binding UsesClipboard, Converter={StaticResource BoolToVisibility}}" />
-                <!-- 固定中の目印（設定画面の一覧と同じ）。固定・解除は下の［固定する］ボタンと Ctrl+P で行う。 -->
-                <TextBlock Grid.Column="3" Text="&#xE840;" FontFamily="{x:Static v:UiFont.Icons}" FontSize="13" Foreground="#D9480F"
-                           HorizontalAlignment="Center" VerticalAlignment="Center" ToolTip="{x:Static l:Strings.PinnedMark}"
-                           Visibility="{Binding Pinned, Converter={StaticResource BoolToVisibility}}" />
+                <!-- 固定中の目印とスロットの番号（設定画面の一覧と同じ）。固定・解除は下の［固定する］のメニューと Ctrl+P で行う。 -->
+                <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" ToolTip="{Binding PinLabel}"
+                            Visibility="{Binding Pinned, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Text="&#xE840;" FontFamily="{x:Static v:UiFont.Icons}" FontSize="13" Foreground="#D9480F" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding PinText}" FontSize="10.5" Foreground="#D9480F" FontWeight="SemiBold" VerticalAlignment="Bottom" Margin="1,0,0,0" />
+                </StackPanel>
             </Grid>
             <DataTemplate.Triggers>
                 <DataTrigger Binding="{Binding ShowCategory}" Value="True">
@@ -129,7 +131,7 @@
                 <TextBlock x:Name="ModeText" Foreground="#555" FontSize="12" TextTrimming="CharacterEllipsis" Margin="0,6,0,0" />
                 <TextBlock Text="{x:Static l:Strings.PickerHint}" ToolTip="{x:Static l:Strings.PickerHintTip}" Foreground="#666" FontSize="11.5"
                            TextWrapping="Wrap" Margin="0,6,0,0" />
-                <!-- 固定ホットキー（登録しているときだけ）。普段見る画面で思い出せるようにする。 -->
+                <!-- 固定のショートカット（登録しているスロットだけ）。普段見る画面で思い出せるようにする。 -->
                 <TextBlock x:Name="FixedHotkeyText" Foreground="#666" FontSize="11.5" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"
                            Visibility="Collapsed" />
 

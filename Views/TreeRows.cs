@@ -33,10 +33,21 @@ public sealed record CategoryRow(Category Category, int Count, bool Expanded, bo
         }.OfType<string>());
 }
 
-/// <summary>テンプレートの行。<paramref name="CategoryName"/> は検索結果の平らな一覧で所属を添えるときだけ。</summary>
-public sealed record TemplateRow(Template Template, bool Pinned, string? CategoryName = null) : TreeRow
+/// <summary>
+/// テンプレートの行。<paramref name="PinSlot"/> は入っている固定スロットの番号（固定していなければ null）。
+/// <paramref name="CategoryName"/> は検索結果の平らな一覧で所属を添えるときだけ。
+/// </summary>
+public sealed record TemplateRow(Template Template, int? PinSlot, string? CategoryName = null) : TreeRow
 {
     public override Guid CategoryId => Template.CategoryId;
+
+    public bool Pinned => PinSlot is not null;
+
+    /// <summary>📌に添える番号。</summary>
+    public string PinText => PinSlot?.ToString() ?? "";
+
+    /// <summary>📌のツールチップ・読み上げ（「固定 N」）。</summary>
+    public string PinLabel => PinSlot is { } n ? string.Format(Strings.PinnedMarkFormat, n) : "";
 
     public string Name => Template.Name;
 
@@ -51,18 +62,19 @@ public sealed record TemplateRow(Template Template, bool Pinned, string? Categor
             Name,
             CategoryName is null ? null : string.Format(Strings.RowCategoryFormat, CategoryName),
             UsesClipboard ? Strings.UsesClipboard : Strings.TextOnly,
-            Pinned ? Strings.PinnedMark : null,
+            Pinned ? PinLabel : null,
         }.OfType<string>());
 }
 
 public static class TreeRows
 {
     /// <summary>Core が決めた行を、表示用の行にする。</summary>
-    public static List<TreeRow> From(IEnumerable<ListEntry> entries, Guid? fixedId, bool collapsible) =>
+    /// <param name="slotOf">テンプレートが入っている固定スロットの番号（無ければ null）。</param>
+    public static List<TreeRow> From(IEnumerable<ListEntry> entries, Func<Guid, int?> slotOf, bool collapsible) =>
         [.. entries.Select(e => e switch
         {
             CategoryEntry c => (TreeRow)new CategoryRow(c.Category, c.Count, c.Expanded, collapsible),
-            TemplateEntry t => new TemplateRow(t.Template, t.Template.Id == fixedId, t.Category?.Name),
+            TemplateEntry t => new TemplateRow(t.Template, slotOf(t.Template.Id), t.Category?.Name),
             _ => throw new InvalidOperationException(),
         })];
 }

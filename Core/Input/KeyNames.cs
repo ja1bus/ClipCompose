@@ -12,6 +12,9 @@ public static class KeyNames
     public static string GetName(int vk) =>
         Names.TryGetValue(vk, out var name) ? name : $"VK_{vk:X2}";
 
+    /// <summary>表に名前があるか（無ければ保存上は "VK_2C" のような表記。画面では Windows のキー名を使う）。</summary>
+    public static bool HasName(int vk) => Names.ContainsKey(vk);
+
     public static bool TryParse(string token, out int vk)
     {
         if (Codes.TryGetValue(token, out vk)) return true;

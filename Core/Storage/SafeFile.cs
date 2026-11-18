@@ -15,6 +15,9 @@ public static class SafeFile
 {
     public const long MaxBytes = 20L * 1024 * 1024;
 
+    /// <summary>退避ファイルの名前の日時の形式（InvariantCulture）。</summary>
+    public const string StampFormat = "yyyyMMdd-HHmmss";
+
     private static readonly byte[] Utf8Bom = [0xEF, 0xBB, 0xBF];
 
     /// <summary>上限までを読む。上限を超えるなら <see cref="FileTooLargeException"/>。先頭の BOM は除く。</summary>
@@ -75,7 +78,8 @@ public static class SafeFile
     /// <summary>"templates.json" → "templates.corrupt-20261025-120000.json"（同名があれば "-2" 等を付ける）。</summary>
     private static string SidePath(string path, string label, DateTime now)
     {
-        var stamp = now.ToString("yyyyMMdd-HHmmss");
+        // 地域設定が和暦などでも西暦で書く（退避ファイルの一覧では名前の日時で並べるため）。
+        var stamp = now.ToString(StampFormat, System.Globalization.CultureInfo.InvariantCulture);
         var directory = Path.GetDirectoryName(path)!;
         var name = Path.GetFileNameWithoutExtension(path);
         var extension = Path.GetExtension(path);

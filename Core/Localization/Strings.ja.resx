@@ -101,7 +101,7 @@
     <value>固定する</value>
   </data>
   <data name="ButtonPinTip" xml:space="preserve">
-    <value>固定モードのショートカットやタスクトレイのメニューから、このテンプレートを実行します。</value>
+    <value>選んでいるテンプレートを固定 1〜3 に入れます。固定のショートカットやタスクトレイのメニューから実行できます。</value>
   </data>
   <data name="ButtonRecovery" xml:space="preserve">
     <value>復旧方法…</value>
@@ -409,7 +409,7 @@
     <value>すべて開く</value>
   </data>
   <data name="PickerFixedHotkeyFormat" xml:space="preserve">
-    <value>固定: {0}</value>
+    <value>固定 {0}: {1}</value>
   </data>
   <data name="PickerHint" xml:space="preserve">
     <value>Enter: 実行　Ctrl+P: 固定　Alt+↑↓: 並べ替え</value>
@@ -593,13 +593,7 @@
     <value>エクスポート・インポートの対象はテンプレートだけです。ショートカットなど、この PC の設定は含みません。</value>
   </data>
   <data name="SettingsDuplicateHotkey" xml:space="preserve">
-    <value>通常モードと固定モードには別のキーを設定してください。</value>
-  </data>
-  <data name="SettingsFixedAutoPaste" xml:space="preserve">
-    <value>固定モードで自動貼り付けする</value>
-  </data>
-  <data name="SettingsFixedHotkey" xml:space="preserve">
-    <value>固定モード（固定テンプレートを実行）:</value>
+    <value>ショートカットはそれぞれ別のキーにしてください。</value>
   </data>
   <data name="SettingsHotkeyFailedFormat" xml:space="preserve">
     <value>ショートカットを登録できませんでした:
@@ -736,14 +730,8 @@
   <data name="ToastFixedMissingDetail" xml:space="preserve">
     <value>削除された可能性があります。選択画面または設定画面で固定し直してください。</value>
   </data>
-  <data name="ToastFixedMissingTitle" xml:space="preserve">
-    <value>固定テンプレートが見つかりません</value>
-  </data>
   <data name="ToastFixedNotSetDetail" xml:space="preserve">
-    <value>選択画面のピンのボタンまたは設定画面でテンプレートを固定してください。</value>
-  </data>
-  <data name="ToastFixedNotSetTitle" xml:space="preserve">
-    <value>固定テンプレートが未設定です</value>
+    <value>選択画面または設定画面の［固定する］で、テンプレートを固定してください。</value>
   </data>
   <data name="ToastInputRejectedTitle" xml:space="preserve">
     <value>クリップボードの文章を使えません</value>
@@ -785,16 +773,16 @@
     <value>テンプレートを選んでコピー…</value>
   </data>
   <data name="TrayRunFixedFormat" xml:space="preserve">
-    <value>固定: {0} をコピー</value>
+    <value>固定 {0}: {1} をコピー</value>
   </data>
   <data name="TraySettings" xml:space="preserve">
     <value>設定…</value>
   </data>
   <data name="TrayTooltipFixedFormat" xml:space="preserve">
-    <value>固定: {0}</value>
+    <value>固定 {0}: {1}</value>
   </data>
   <data name="TrayTooltipFixedHotkeyFormat" xml:space="preserve">
-    <value>固定: {0}（{1}）</value>
+    <value>固定 {0}: {1}（{2}）</value>
   </data>
   <data name="TrayTooltipNoFixed" xml:space="preserve">
     <value>固定: なし</value>
@@ -812,5 +800,109 @@
   </data>
   <data name="VersionFormat" xml:space="preserve">
     <value>バージョン {0}</value>
+  </data>
+  <data name="ToastFixedNotSetTitleFormat" xml:space="preserve">
+    <value>固定 {0} が設定されていません</value>
+  </data>
+  <data name="ToastFixedMissingTitleFormat" xml:space="preserve">
+    <value>固定 {0} のテンプレートが見つかりません</value>
+  </data>
+  <data name="TrayTooltipFixedCountFormat" xml:space="preserve">
+    <value>固定: {0} 件</value>
+  </data>
+  <data name="PinMenuPinFormat" xml:space="preserve">
+    <value>固定 _{0} に入れる</value>
+  </data>
+  <data name="PinMenuReplaceFormat" xml:space="preserve">
+    <value>固定 _{0} に入れる（いま: {1}）</value>
+  </data>
+  <data name="PinMenuUnpinFormat" xml:space="preserve">
+    <value>固定 _{0} を解除</value>
+  </data>
+  <data name="ButtonPinnedSlotFormat" xml:space="preserve">
+    <value>固定 {0}</value>
+  </data>
+  <data name="PinnedMarkFormat" xml:space="preserve">
+    <value>固定 {0}</value>
+  </data>
+  <data name="SettingsFixedSlotFormat" xml:space="preserve">
+    <value>固定 {0}: {1}</value>
+  </data>
+  <data name="SettingsFixedSlotUnset" xml:space="preserve">
+    <value>（未設定）</value>
+  </data>
+  <data name="SettingsFixedSlotMissing" xml:space="preserve">
+    <value>（見つかりません）</value>
+  </data>
+  <data name="SettingsFixedSlotHotkeyNameFormat" xml:space="preserve">
+    <value>固定 {0} のショートカット</value>
+  </data>
+  <data name="SettingsFixedSlotAutoPaste" xml:space="preserve">
+    <value>自動貼り付けする</value>
+  </data>
+  <data name="SettingsFixedSlotAutoPasteNameFormat" xml:space="preserve">
+    <value>固定 {0} で自動貼り付けする</value>
+  </data>
+  <data name="ButtonUnpinSlot" xml:space="preserve">
+    <value>解除</value>
+  </data>
+  <data name="ButtonUnpinSlotNameFormat" xml:space="preserve">
+    <value>固定 {0} を解除</value>
+  </data>
+  <data name="SettingsPickerPlacement" xml:space="preserve">
+    <value>選択画面を開く位置:</value>
+  </data>
+  <data name="PlacementCenter" xml:space="preserve">
+    <value>画面の中央</value>
+  </data>
+  <data name="PlacementCursor" xml:space="preserve">
+    <value>カーソルの近く</value>
+  </data>
+  <data name="PlacementRemembered" xml:space="preserve">
+    <value>前回の位置</value>
+  </data>
+  <data name="SettingsStartupNotice" xml:space="preserve">
+    <value>起動時に通知を表示する</value>
+  </data>
+  <data name="ButtonRestoreEarlier" xml:space="preserve">
+    <value>以前の状態に戻す…</value>
+  </data>
+  <data name="RestoreTitle" xml:space="preserve">
+    <value>以前の状態に戻す</value>
+  </data>
+  <data name="RestorePrompt" xml:space="preserve">
+    <value>戻す状態を選んでください。インポート・削除・戻す操作の前のデータを、新しい順に最大 20 件残しています。</value>
+  </data>
+  <data name="RestoreNone" xml:space="preserve">
+    <value>戻せる状態がありません。</value>
+  </data>
+  <data name="RestoreSelectHint" xml:space="preserve">
+    <value>行を選ぶと内容を確認します。</value>
+  </data>
+  <data name="RestoreKindImport" xml:space="preserve">
+    <value>インポート前</value>
+  </data>
+  <data name="RestoreKindDelete" xml:space="preserve">
+    <value>削除前</value>
+  </data>
+  <data name="RestoreKindRestore" xml:space="preserve">
+    <value>戻す前</value>
+  </data>
+  <data name="RestoreCountFormat" xml:space="preserve">
+    <value>カテゴリ {0} 件・テンプレート {1} 件</value>
+  </data>
+  <data name="ButtonRestoreRun" xml:space="preserve">
+    <value>戻す</value>
+  </data>
+  <data name="RestoreConfirmFormat" xml:space="preserve">
+    <value>現在のテンプレートをすべて、この以前の状態（{4}）に置き換えますか？
+
+現在: カテゴリ {0} 件、テンプレート {1} 件
+以前の状態: カテゴリ {2} 件、テンプレート {3} 件
+
+置き換える前に現在のデータを残すので、あとで戻せます。固定はすべて解除されます。</value>
+  </data>
+  <data name="RestoreDoneFormat" xml:space="preserve">
+    <value>以前の状態に戻しました（カテゴリ {0} 件、テンプレート {1} 件）。</value>
   </data>
 </root>

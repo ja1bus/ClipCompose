@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using ClipCompose.Core.Localization;
 using ClipCompose.Core.Settings;
 
 namespace ClipCompose.Core.Storage;
@@ -52,4 +53,30 @@ internal sealed partial class TemplateJsonContext : JsonSerializerContext;
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     AllowDuplicateProperties = false)]
 [JsonSerializable(typeof(AppSettings))]
+[JsonSerializable(typeof(LegacySettingsV1))]
 internal sealed partial class SettingsJsonContext : JsonSerializerContext;
+
+/// <summary>
+/// schemaVersion 1（1.2.1 まで）の settings.json（移行用）。1.2.1 の AppSettings と同じ項目・型・既定値だけを持ち、
+/// 1.2.1 が知らない項目（fixedSlots・pickerPlacement 等）は無視する（1.2.1 と同じく、それらの型の違いで失敗させない）。
+/// </summary>
+public sealed class LegacySettingsV1
+{
+    public Guid? FixedTemplateId { get; set; }
+
+    public string? NormalHotkey { get; set; } = "";
+
+    public string? FixedHotkey { get; set; } = "";
+
+    public bool NormalAutoPaste { get; set; }
+
+    public bool FixedAutoPaste { get; set; } = true;
+
+    public string? Language { get; set; } = UiLanguage.System;
+
+    public bool TrayNoticeShown { get; set; }
+
+    public bool PickerPreview { get; set; }
+
+    public List<Guid>? CollapsedCategoryIds { get; set; } = [];
+}

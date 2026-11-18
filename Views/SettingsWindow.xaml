@@ -47,28 +47,29 @@
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
                                     <TextBlock Text="{x:Static l:Strings.SettingsNormalHotkey}" VerticalAlignment="Center" TextWrapping="Wrap" />
                                     <v:ShortcutBox x:Name="NormalBox" Grid.Column="1" Height="26" Margin="0,2"
                                                    AutomationProperties.Name="{x:Static l:Strings.SettingsNormalHotkey}" />
                                     <TextBlock x:Name="NormalStatus" Grid.Row="1" Grid.ColumnSpan="2" Foreground="Firebrick" FontSize="12" Margin="0,0,0,6" HorizontalAlignment="Right" />
-                                    <TextBlock Grid.Row="2" Text="{x:Static l:Strings.SettingsFixedHotkey}" VerticalAlignment="Center" TextWrapping="Wrap" />
-                                    <v:ShortcutBox x:Name="FixedBox" Grid.Row="2" Grid.Column="1" Height="26" Margin="0,2"
-                                                   AutomationProperties.Name="{x:Static l:Strings.SettingsFixedHotkey}" />
-                                    <TextBlock x:Name="FixedStatus" Grid.Row="3" Grid.ColumnSpan="2" Foreground="Firebrick" FontSize="12" HorizontalAlignment="Right" />
                                 </Grid>
+                                <!-- 固定スロット 1〜3（1.3.0〜）。行はコードで作る（各スロット: 名前と［解除］、ショートカットと自動貼り付け、登録の結果）。 -->
+                                <StackPanel x:Name="FixedSlotsPanel" />
                                 <TextBlock Text="{x:Static l:Strings.SettingsHotkeyNote}" Style="{StaticResource Note}" />
                             </StackPanel>
                         </GroupBox>
                         <GroupBox Header="{x:Static l:Strings.SettingsAutoPaste}" Padding="8" Margin="0,10,0,0">
                             <StackPanel>
                                 <CheckBox x:Name="NormalAutoPasteBox" Content="{x:Static l:Strings.SettingsNormalAutoPaste}" Margin="0,2" Checked="OnAutoPasteChanged" Unchecked="OnAutoPasteChanged" />
-                                <CheckBox x:Name="FixedAutoPasteBox" Content="{x:Static l:Strings.SettingsFixedAutoPaste}" Margin="0,2" Checked="OnAutoPasteChanged" Unchecked="OnAutoPasteChanged" />
                                 <TextBlock Text="{x:Static l:Strings.SettingsAutoPasteNote}" Style="{StaticResource Note}" />
                             </StackPanel>
                         </GroupBox>
+                        <!-- 選択画面を開く位置（1.3.0〜）。変更した時点で保存する。 -->
+                        <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                            <TextBlock Text="{x:Static l:Strings.SettingsPickerPlacement}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <ComboBox x:Name="PlacementBox" MinWidth="200" DisplayMemberPath="Name" SelectionChanged="OnPlacementChanged"
+                                      AutomationProperties.Name="{x:Static l:Strings.SettingsPickerPlacement}" />
+                        </StackPanel>
                         <TextBlock Text="{x:Static l:Strings.SettingsAppliedNote}" Style="{StaticResource Note}" Margin="0,10,0,0" />
                     </StackPanel>
                 </ScrollViewer>
@@ -91,6 +92,9 @@
                                 <TextBlock x:Name="StartupStatus" Style="{StaticResource Note}" />
                                 <Button x:Name="StartupSettingsButton" Content="{x:Static l:Strings.SettingsStartupOpenWindows}" Style="{StaticResource DataButton}"
                                         HorizontalAlignment="Left" Margin="0,6,0,0" Click="OnOpenStartupSettings" Visibility="Collapsed" />
+                                <!-- 起動時の「起動しました」の通知（1.3.0〜）。初回の案内・読み込み失敗の画面は設定によらず出す。 -->
+                                <CheckBox x:Name="StartupNoticeBox" Content="{x:Static l:Strings.SettingsStartupNotice}" Margin="0,8,0,0"
+                                          Checked="OnStartupNoticeChanged" Unchecked="OnStartupNoticeChanged" />
                             </StackPanel>
                         </GroupBox>
                         <GroupBox Header="{x:Static l:Strings.SettingsData}" Padding="8" Margin="0,10,0,0">
@@ -103,6 +107,7 @@
                                 </WrapPanel>
                                 <WrapPanel>
                                     <Button Content="{x:Static l:Strings.ButtonOpenFolder}" Style="{StaticResource DataButton}" Click="OnOpenFolder" />
+                                    <Button x:Name="RestoreButton" Content="{x:Static l:Strings.ButtonRestoreEarlier}" Style="{StaticResource DataButton}" Click="OnRestoreEarlier" />
                                     <Button x:Name="RecoveryButton" Content="{x:Static l:Strings.ButtonRecovery}" Style="{StaticResource DataButton}" Click="OnRecovery" />
                                 </WrapPanel>
                                 <TextBlock x:Name="DataFolderText" Style="{StaticResource Note}" />

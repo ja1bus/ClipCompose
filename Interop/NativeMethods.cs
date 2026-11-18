@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 namespace ClipCompose.Interop;
 
 /// <summary>
-/// Win32 API の宣言（クリップボード・ホットキー・貼り付け・ウィンドウ）。.NET 7 以降の LibraryImport（ソース生成）を使う。
+/// Win32 API の宣言（クリップボード・ホットキー・貼り付け・ウィンドウ・モニター・キー名）。.NET 7 以降の LibraryImport（ソース生成）を使う。
 /// </summary>
 internal static partial class NativeMethods
 {
@@ -179,6 +179,85 @@ internal static partial class NativeMethods
 
     [LibraryImport("user32.dll", EntryPoint = "SetWindowLongPtrW")]
     public static partial IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
+
+    // ---- モニター・位置（1.3.0。選択画面・通知を置くモニターの作業領域） ----
+
+    public const uint MONITOR_DEFAULTTONULL = 0;
+    public const uint MONITOR_DEFAULTTOPRIMARY = 1;
+    public const uint MONITOR_DEFAULTTONEAREST = 2;
+
+    public const uint SWP_NOSIZE = 0x0001;
+    public const uint SWP_NOZORDER = 0x0004;
+    public const uint SWP_NOACTIVATE = 0x0010;
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct POINT
+    {
+        public int X;
+        public int Y;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct RECT
+    {
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct MONITORINFO
+    {
+        public int cbSize;
+        public RECT rcMonitor;
+        public RECT rcWork;
+        public uint dwFlags;
+    }
+
+    [LibraryImport("user32.dll")]
+    public static partial IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
+
+    [LibraryImport("user32.dll")]
+    public static partial IntPtr MonitorFromPoint(POINT pt, uint dwFlags);
+
+    [LibraryImport("user32.dll", EntryPoint = "GetMonitorInfoW")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool GetCursorPos(out POINT lpPoint);
+
+    [LibraryImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+
+    [LibraryImport("user32.dll")]
+    public static partial uint GetDpiForWindow(IntPtr hwnd);
+
+    [LibraryImport("user32.dll")]
+    public static partial uint GetDpiForSystem();
+
+    /// <summary>モニターの実効 DPI（shcore.dll）。</summary>
+    [LibraryImport("shcore.dll")]
+    public static partial int GetDpiForMonitor(IntPtr hmonitor, int dpiType, out uint dpiX, out uint dpiY);
+
+    public const int MDT_EFFECTIVE_DPI = 0;
+
+    // ---- キー名（1.3.0。表に無いキーの表示） ----
+
+    public const uint MAPVK_VK_TO_VSC_EX = 4;
+
+    [LibraryImport("user32.dll", EntryPoint = "MapVirtualKeyW")]
+    public static partial uint MapVirtualKey(uint uCode, uint uMapType);
+
+    [LibraryImport("user32.dll", EntryPoint = "GetKeyNameTextW")]
+    public static unsafe partial int GetKeyNameText(int lParam, char* lpString, int cchSize);
 
     // ---- プロセスの権限 ----
 

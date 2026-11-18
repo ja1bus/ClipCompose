@@ -320,7 +320,7 @@ public sealed class ImportProcedureTests : IDisposable
         _current = t.Library!;
         _pinned = t.Id;
         _templates.Save(_current);
-        _settings.Save(new AppSettings { FixedTemplateId = _pinned });
+        _settings.Save(Pinned());
     }
 
     public void Dispose() => _dir.Dispose();
@@ -332,15 +332,15 @@ public sealed class ImportProcedureTests : IDisposable
         return c.Library!.AddTemplate(c.Id, "same id", "imported body", _pinned).Library!;
     }
 
-    private AppSettings Pinned() => new() { FixedTemplateId = _pinned };
+    private AppSettings Pinned() => TestSettings.PinnedInSlot1(_pinned);
 
     [Fact]
     public void Successful_import_unpins_even_when_the_same_id_is_imported()
     {
         var outcome = ImportProcedure.Replace(_templates, _settings, Pinned(), ImportedWithSameId());
         Assert.True(outcome.Succeeded);
-        Assert.Null(outcome.Settings.FixedTemplateId);
-        Assert.Null(new SettingsStore(_dir.Path).Load().Settings.FixedTemplateId);
+        Assert.Null(outcome.Settings.Slot(1).TemplateId);
+        Assert.Null(new SettingsStore(_dir.Path).Load().Settings.Slot(1).TemplateId);
         Assert.Equal("imported body", _templates.Load().Library.FindTemplate(_pinned)!.Body);
     }
 
@@ -351,11 +351,11 @@ public sealed class ImportProcedureTests : IDisposable
         {
             var outcome = ImportProcedure.Replace(_templates, _settings, Pinned(), ImportedWithSameId());
             Assert.False(outcome.Succeeded);
-            Assert.Equal(_pinned, outcome.Settings.FixedTemplateId); // 実行上も元のまま（テンプレートも元のまま）
+            Assert.Equal(_pinned, outcome.Settings.Slot(1).TemplateId); // 実行上も元のまま（テンプレートも元のまま）
             Assert.Contains(_settings.FilePath, outcome.Problem);
         }
         Assert.Equal("current body", _templates.Load().Library.FindTemplate(_pinned)!.Body);
-        Assert.Equal(_pinned, new SettingsStore(_dir.Path).Load().Settings.FixedTemplateId);
+        Assert.Equal(_pinned, new SettingsStore(_dir.Path).Load().Settings.Slot(1).TemplateId);
         Assert.Empty(Directory.GetFiles(_dir.Path, "templates.before-import-*.json"));
     }
 
@@ -366,10 +366,10 @@ public sealed class ImportProcedureTests : IDisposable
         {
             var outcome = ImportProcedure.Replace(_templates, _settings, Pinned(), ImportedWithSameId());
             Assert.False(outcome.Succeeded);
-            Assert.Equal(_pinned, outcome.Settings.FixedTemplateId);
+            Assert.Equal(_pinned, outcome.Settings.Slot(1).TemplateId);
         }
         Assert.Equal("current body", _templates.Load().Library.FindTemplate(_pinned)!.Body);
-        Assert.Equal(_pinned, new SettingsStore(_dir.Path).Load().Settings.FixedTemplateId);
+        Assert.Equal(_pinned, new SettingsStore(_dir.Path).Load().Settings.Slot(1).TemplateId);
     }
 
     [Fact]
@@ -394,11 +394,18 @@ public sealed class SettingsStoreTests : IDisposable
     {
         var s = new AppSettings();
         Assert.Equal("", s.NormalHotkey);
-        Assert.Equal("", s.FixedHotkey);
         Assert.False(s.NormalAutoPaste);
-        Assert.True(s.FixedAutoPaste);
-        Assert.Null(s.FixedTemplateId);
+        Assert.Equal(3, s.FixedSlots.Count);
+        Assert.All(s.FixedSlots, slot =>
+        {
+            Assert.Equal("", slot.Hotkey);
+            Assert.True(slot.AutoPaste);
+            Assert.Null(slot.TemplateId);
+        });
         Assert.Equal("", s.Language);
+        Assert.Equal(PickerPlacements.Center, s.PickerPlacement);
+        Assert.Null(s.PickerLeft);
+        Assert.True(s.StartupNotice);
     }
 
     [Fact]
@@ -407,14 +414,16 @@ public sealed class SettingsStoreTests : IDisposable
         var store = new SettingsStore(_dir.Path);
         Assert.Equal(LoadKind.Missing, store.Load().Kind);
         var id = Guid.NewGuid();
-        var s = new AppSettings { NormalHotkey = "Ctrl+Alt+Space", FixedTemplateId = id, NormalAutoPaste = true, FixedAutoPaste = false, Language = "ja", TrayNoticeShown = true, PickerPreview = true };
+        var s = new AppSettings { NormalHotkey = "Ctrl+Alt+Space", NormalAutoPaste = true, Language = "ja", TrayNoticeShown = true, PickerPreview = true };
+        s.Slot(1).TemplateId = id;
+        s.Slot(1).AutoPaste = false;
         Assert.True(store.Save(s).Succeeded);
         var load = new SettingsStore(_dir.Path).Load();
         Assert.Equal(LoadKind.Loaded, load.Kind);
         Assert.Equal("Ctrl+Alt+Space", load.Settings.NormalHotkey);
-        Assert.Equal(id, load.Settings.FixedTemplateId);
+        Assert.Equal(id, load.Settings.Slot(1).TemplateId);
         Assert.True(load.Settings.NormalAutoPaste);
-        Assert.False(load.Settings.FixedAutoPaste);
+        Assert.False(load.Settings.Slot(1).AutoPaste);
         Assert.Equal("ja", load.Settings.Language);
         Assert.True(load.Settings.TrayNoticeShown);
         Assert.True(load.Settings.PickerPreview);
@@ -440,24 +449,29 @@ public sealed class SettingsStoreTests : IDisposable
         var load = store.Load();
         Assert.Equal(LoadKind.Loaded, load.Kind);
         Assert.Equal("", load.Settings.NormalHotkey);
-        Assert.Equal("", load.Settings.FixedHotkey);
+        Assert.Equal("", load.Settings.Slot(1).Hotkey);
         Assert.Equal("", load.Settings.Language);
-        Assert.Null(load.Settings.FixedTemplateId);
-        Assert.Equal(3, load.Fixes.Count);
+        Assert.Null(load.Settings.Slot(1).TemplateId);
+        // 1.3.0: 移行の記録 1 件 + 補正 3 件（表示言語・通常・スロット 1 のショートカット。空の GUID は記録しない）。
+        Assert.Equal(4, load.Fixes.Count);
+        Assert.Contains(load.Fixes, f => f.StartsWith("Migrated from schemaVersion 1"));
+        Assert.Contains(load.Fixes, f => f.StartsWith("FixedSlots[0].Hotkey"));
     }
 
     [Fact]
     public void Duplicate_hotkeys_keep_only_the_normal_one()
     {
-        var s = new AppSettings { NormalHotkey = "Ctrl+Alt+P", FixedHotkey = "ctrl+alt+p" };
+        var s = new AppSettings { NormalHotkey = "Ctrl+Alt+P" };
+        s.Slot(1).Hotkey = "ctrl+alt+p";
         SettingsNormalizer.Normalize(s);
         Assert.Equal("Ctrl+Alt+P", s.NormalHotkey);
-        Assert.Equal("", s.FixedHotkey);
+        Assert.Equal("", s.Slot(1).Hotkey);
     }
 
     [Theory]
     [InlineData("{ broken")]
-    [InlineData("""{"schemaVersion": 2, "newSetting": 1}""")]
+    [InlineData("""{"schemaVersion": 3, "newSetting": 1}""")] // 1.3.0 で 2 が現在の版になったため 3 で確かめる
+    [InlineData("""{"schemaVersion": 99}""")]
     [InlineData("""{"schemaVersion": "1"}""")] // レビュー指摘 1
     [InlineData("""{"normalHotkey": "Ctrl+Alt+P"}""")]
     [InlineData("""[]""")]

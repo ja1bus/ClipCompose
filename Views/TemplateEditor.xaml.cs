@@ -97,7 +97,7 @@ public partial class TemplateEditor : UserControl
         }
         // 編集中のカテゴリは ID で覚えておく。一覧を差し替えると選択が外れ、カテゴリは名前を含む値なので改名後は一致しないため。
         var editorCategory = (EditorCategoryBox.SelectedItem as Category)?.Id;
-        var rows = TreeRows.From(TemplateListView.ForEditor(library, Query), _host.Fixed.Template?.Id, collapsible: false);
+        var rows = TreeRows.From(TemplateListView.ForEditor(library, Query), _host.SlotOf, collapsible: false);
         _restoringSelection = true;
         var wasLoading = _loadingEditor;
         _loadingEditor = true;
@@ -164,7 +164,7 @@ public partial class TemplateEditor : UserControl
         // 検索で絞っている間は、見えていない項目との位置関係が分からないため並べ替えない。
         UpButton.IsEnabled = DownButton.IsEnabled = !blocked && row is not null && Query.Length == 0;
         PinButton.IsEnabled = template is not null && !_host.SettingsBlocked;
-        PinText.Text = template is not null && template.Id == _host.Fixed.Template?.Id ? Strings.ButtonUnpin : Strings.ButtonPin;
+        PinText.Text = template is not null && _host.SlotOf(template.Id) is { } slot ? string.Format(Strings.ButtonPinnedSlotFormat, slot) : Strings.ButtonPin;
 
         var editing = _editing is not null || _editingNew;
         EditorPanel.IsEnabled = editing;
@@ -362,7 +362,7 @@ public partial class TemplateEditor : UserControl
         // 削除するカテゴリの中を編集中（新規・複製を含む）なら、先に保存・破棄・キャンセルを選ぶ。
         if (!ConfirmLeaveEditor()) return;
         var first = string.Format(Strings.ConfirmDeleteCategoryWithTemplatesFormat, category.Name, count.ToString("N0"));
-        var pinned = _host.Fixed.Template is { } f && f.CategoryId == category.Id;
+        var pinned = _host.FixedAll.Any(f => f.Template is { } t && t.CategoryId == category.Id);
         if (pinned) first += "\n\n" + Strings.ConfirmDeleteCategoryPinned;
         if (!Confirm(first)) return;
         if (!Confirm(string.Format(Strings.ConfirmDeleteCategoryFinalFormat, category.Name), MessageBoxImage.Warning)) return;
@@ -456,7 +456,7 @@ public partial class TemplateEditor : UserControl
 
     private void DeleteTemplate(Template template)
     {
-        var pinned = template.Id == _host.Fixed.Template?.Id;
+        var pinned = _host.SlotOf(template.Id) is not null;
         var message = string.Format(Strings.ConfirmDeleteTemplateFormat, template.Name);
         if (pinned) message += "\n\n" + Strings.ConfirmDeleteTemplatePinned;
         if (!Confirm(message)) return;
@@ -470,18 +470,23 @@ public partial class TemplateEditor : UserControl
         // 削除後に別のテンプレートを自動で固定しない。固定の解除を保存できなくても、参照先不在として扱われる。
         if (pinned)
         {
-            var unpinError = _host.SetFixed(null);
+            var unpinError = _host.UnpinTemplate(template.Id);
             if (unpinError.Length > 0) ShowError(unpinError);
         }
         Refresh(selectCategory: template.CategoryId);
     }
 
+    /// <summary>スロットを選ぶメニューを開く（選択画面と同じメニュー。仕様書 §17.5）。</summary>
     private void OnTogglePin(object sender, RoutedEventArgs e)
     {
-        if (SelectedTemplate is not { } template) return;
-        var error = _host.SetFixed(template.Id == _host.Fixed.Template?.Id ? null : template.Id);
-        if (error.Length > 0) ShowError(error);
-        Refresh(template.CategoryId, template.Id);
+        if (SelectedTemplate is not { } template || _host.SettingsBlocked) return;
+        var menu = PinMenu.Create(template, _host.FixedAll, (slot, id) =>
+        {
+            var error = _host.SetFixed(slot, id);
+            if (error.Length > 0) ShowError(error);
+            Refresh(template.CategoryId, template.Id);
+        });
+        PinMenu.Open(menu, PinButton);
     }
 
     private void OnRecovery(object sender, RoutedEventArgs e)

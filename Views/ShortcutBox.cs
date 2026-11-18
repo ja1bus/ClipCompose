@@ -103,7 +103,8 @@ public sealed class ShortcutBox : TextBox
         Shortcut = new Shortcut(modifiers, vk);
     }
 
-    private void UpdateText() => Text = _shortcut.IsEmpty ? Strings.ShortcutBoxUnassigned : _shortcut.ToString();
+    // 画面では表に無いキー（記号キーなど）を Windows のキー名で出す（保存形式は Shortcut.ToString() のまま）。
+    private void UpdateText() => Text = _shortcut.IsEmpty ? Strings.ShortcutBoxUnassigned : Services.ShortcutDisplay.Format(_shortcut);
 
     private static KeyModifiers ToModifiers(ModifierKeys m)
     {

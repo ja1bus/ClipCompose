@@ -10,12 +10,12 @@ This repository contains the source code of the publicly released ClipCompose.
 
 - Two levels of categories and templates: create, edit, duplicate, reorder and search them on the Templates tab of Settings
 - Write `{{clipboard}}` in a template, and it is replaced with the clipboard text when the template runs. A template without `{{clipboard}}` is copied as is, and the clipboard is not read
-- Chooser: pick from one list with category headings and press Enter. Collapse categories, search by template or category name, show the template text, pin a template, and reorder with keys or by dragging
-- Pinned template: pin one template and run it with the pinned mode shortcut without opening the chooser
-- Shortcuts (normal mode and pinned mode, not set by default) and optional automatic paste into the window you were using when you pressed the shortcut
+- Chooser: pick from one list with category headings and press Enter. Collapse categories, search by template or category name, show the template text, pin a template, and reorder with keys or by dragging. Choose where it opens (center of the screen, near the pointer, or where it was last closed); with more than one monitor, it is kept within that monitor
+- Pinned templates: pin up to three templates (pinned 1–3) and run each with its own shortcut without opening the chooser (automatic paste can be set for each slot)
+- Shortcuts (normal mode and pinned 1–3, not set by default) and optional automatic paste into the window you were using when you pressed the shortcut
 - If the source app marked the copied text as excluded from clipboard history (for example), the result gets the same marks
-- Export the categories you choose, import (add) categories you choose from a file, and restore by replacing all templates (JSON)
-- Start when you sign in to Windows (Microsoft Store version, off by default)
+- Export the categories you choose, import (add) categories you choose from a file, and restore by replacing all templates (JSON). Up to 20 states before imports and deletions are kept, and Restore an earlier state… brings one back
+- Start when you sign in to Windows (Microsoft Store version, off by default), and turn the startup notification on or off
 - English and Japanese user interface (follows the Windows display language, or can be set in Settings)
 
 ClipCompose does not monitor the clipboard or keep a history. Templates and settings are stored only on this PC, and ClipCompose sends nothing to the internet (see the privacy policy below). It does not send anything to AI services or get answers from them.

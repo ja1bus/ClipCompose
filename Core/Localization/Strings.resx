@@ -101,7 +101,7 @@ Details were written to:
     <value>Pin</value>
   </data>
   <data name="ButtonPinTip" xml:space="preserve">
-    <value>Run this template with the pinned mode shortcut or from the tray menu.</value>
+    <value>Put this template in pinned slot 1, 2 or 3. Run it with the slot's shortcut or from the tray menu.</value>
   </data>
   <data name="ButtonRecovery" xml:space="preserve">
     <value>Recovery options…</value>
@@ -409,7 +409,7 @@ Categories that are not in the file are also deleted. The current data is backed
     <value>Expand all</value>
   </data>
   <data name="PickerFixedHotkeyFormat" xml:space="preserve">
-    <value>Pinned: {0}</value>
+    <value>Pinned {0}: {1}</value>
   </data>
   <data name="PickerHint" xml:space="preserve">
     <value>Enter: run   Ctrl+P: pin   Alt+↑↓: reorder</value>
@@ -593,13 +593,7 @@ Choose a recovery option first.</value>
     <value>Export and import include only templates, not shortcuts or other settings on this PC.</value>
   </data>
   <data name="SettingsDuplicateHotkey" xml:space="preserve">
-    <value>The normal mode and pinned mode shortcuts must be different.</value>
-  </data>
-  <data name="SettingsFixedAutoPaste" xml:space="preserve">
-    <value>Paste automatically in pinned mode</value>
-  </data>
-  <data name="SettingsFixedHotkey" xml:space="preserve">
-    <value>Pinned mode (run the pinned template):</value>
+    <value>Each shortcut must use a different key combination.</value>
   </data>
   <data name="SettingsHotkeyFailedFormat" xml:space="preserve">
     <value>Could not register the shortcut:
@@ -736,14 +730,8 @@ Move the file aside (it is kept with "corrupt" in its name) and start with defau
   <data name="ToastFixedMissingDetail" xml:space="preserve">
     <value>It may have been deleted. Pin another template in the chooser or in Settings.</value>
   </data>
-  <data name="ToastFixedMissingTitle" xml:space="preserve">
-    <value>Pinned template not found</value>
-  </data>
   <data name="ToastFixedNotSetDetail" xml:space="preserve">
-    <value>Pin a template with the pin button in the chooser or in Settings.</value>
-  </data>
-  <data name="ToastFixedNotSetTitle" xml:space="preserve">
-    <value>No pinned template</value>
+    <value>Pin a template with the Pin button in the chooser or in Settings.</value>
   </data>
   <data name="ToastInputRejectedTitle" xml:space="preserve">
     <value>Cannot use the clipboard text</value>
@@ -785,16 +773,16 @@ Move the file aside (it is kept with "corrupt" in its name) and start with defau
     <value>Choose a template and copy…</value>
   </data>
   <data name="TrayRunFixedFormat" xml:space="preserve">
-    <value>Copy pinned: {0}</value>
+    <value>Copy pinned {0}: {1}</value>
   </data>
   <data name="TraySettings" xml:space="preserve">
     <value>Settings…</value>
   </data>
   <data name="TrayTooltipFixedFormat" xml:space="preserve">
-    <value>Pinned: {0}</value>
+    <value>Pinned {0}: {1}</value>
   </data>
   <data name="TrayTooltipFixedHotkeyFormat" xml:space="preserve">
-    <value>Pinned: {0} ({1})</value>
+    <value>Pinned {0}: {1} ({2})</value>
   </data>
   <data name="TrayTooltipNoFixed" xml:space="preserve">
     <value>Pinned: none</value>
@@ -812,5 +800,109 @@ Yes: save   No: discard   Cancel: keep editing</value>
   </data>
   <data name="VersionFormat" xml:space="preserve">
     <value>Version {0}</value>
+  </data>
+  <data name="ToastFixedNotSetTitleFormat" xml:space="preserve">
+    <value>Pinned slot {0} is not set</value>
+  </data>
+  <data name="ToastFixedMissingTitleFormat" xml:space="preserve">
+    <value>Template in pinned slot {0} not found</value>
+  </data>
+  <data name="TrayTooltipFixedCountFormat" xml:space="preserve">
+    <value>Pinned: {0}</value>
+  </data>
+  <data name="PinMenuPinFormat" xml:space="preserve">
+    <value>Pin to slot _{0}</value>
+  </data>
+  <data name="PinMenuReplaceFormat" xml:space="preserve">
+    <value>Pin to slot _{0} (now: {1})</value>
+  </data>
+  <data name="PinMenuUnpinFormat" xml:space="preserve">
+    <value>Unpin slot _{0}</value>
+  </data>
+  <data name="ButtonPinnedSlotFormat" xml:space="preserve">
+    <value>Pinned {0}</value>
+  </data>
+  <data name="PinnedMarkFormat" xml:space="preserve">
+    <value>Pinned {0}</value>
+  </data>
+  <data name="SettingsFixedSlotFormat" xml:space="preserve">
+    <value>Pinned {0}: {1}</value>
+  </data>
+  <data name="SettingsFixedSlotUnset" xml:space="preserve">
+    <value>(not set)</value>
+  </data>
+  <data name="SettingsFixedSlotMissing" xml:space="preserve">
+    <value>(not found)</value>
+  </data>
+  <data name="SettingsFixedSlotHotkeyNameFormat" xml:space="preserve">
+    <value>Shortcut for pinned {0}</value>
+  </data>
+  <data name="SettingsFixedSlotAutoPaste" xml:space="preserve">
+    <value>Paste automatically</value>
+  </data>
+  <data name="SettingsFixedSlotAutoPasteNameFormat" xml:space="preserve">
+    <value>Paste automatically for pinned {0}</value>
+  </data>
+  <data name="ButtonUnpinSlot" xml:space="preserve">
+    <value>Unpin</value>
+  </data>
+  <data name="ButtonUnpinSlotNameFormat" xml:space="preserve">
+    <value>Unpin pinned {0}</value>
+  </data>
+  <data name="SettingsPickerPlacement" xml:space="preserve">
+    <value>Where the chooser opens:</value>
+  </data>
+  <data name="PlacementCenter" xml:space="preserve">
+    <value>Center of the screen</value>
+  </data>
+  <data name="PlacementCursor" xml:space="preserve">
+    <value>Near the pointer</value>
+  </data>
+  <data name="PlacementRemembered" xml:space="preserve">
+    <value>Where it was last closed</value>
+  </data>
+  <data name="SettingsStartupNotice" xml:space="preserve">
+    <value>Show a notification when ClipCompose starts</value>
+  </data>
+  <data name="ButtonRestoreEarlier" xml:space="preserve">
+    <value>Restore an earlier state…</value>
+  </data>
+  <data name="RestoreTitle" xml:space="preserve">
+    <value>Restore an earlier state</value>
+  </data>
+  <data name="RestorePrompt" xml:space="preserve">
+    <value>Choose the state to restore. The data before each import, deletion or restore is kept, up to 20 copies, newest first.</value>
+  </data>
+  <data name="RestoreNone" xml:space="preserve">
+    <value>There is no earlier state to restore.</value>
+  </data>
+  <data name="RestoreSelectHint" xml:space="preserve">
+    <value>Select a row to check its contents.</value>
+  </data>
+  <data name="RestoreKindImport" xml:space="preserve">
+    <value>Before import</value>
+  </data>
+  <data name="RestoreKindDelete" xml:space="preserve">
+    <value>Before delete</value>
+  </data>
+  <data name="RestoreKindRestore" xml:space="preserve">
+    <value>Before restore</value>
+  </data>
+  <data name="RestoreCountFormat" xml:space="preserve">
+    <value>{0} categories, {1} templates</value>
+  </data>
+  <data name="ButtonRestoreRun" xml:space="preserve">
+    <value>Restore</value>
+  </data>
+  <data name="RestoreConfirmFormat" xml:space="preserve">
+    <value>Replace all templates with this earlier state ({4})?
+
+Current: {0} categories, {1} templates
+Earlier state: {2} categories, {3} templates
+
+The current data is kept before it is replaced, so you can come back to it. All pinned slots are unpinned.</value>
+  </data>
+  <data name="RestoreDoneFormat" xml:space="preserve">
+    <value>Restored the earlier state: {0} categories, {1} templates.</value>
   </data>
 </root>
